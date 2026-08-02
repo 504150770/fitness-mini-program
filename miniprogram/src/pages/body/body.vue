@@ -30,11 +30,20 @@
 
     <view class='card'>
       <view class='section-title'>体重趋势</view>
-      <view v-if='trendWithDelta.length === 0' class='muted'>暂无数据</view>
-      <view v-for='t in trendWithDelta' :key='t.date' class='trend-row'>
-        <text class='trend-date'>{{ t.date }}</text>
-        <text class='trend-weight'>{{ t.weightKg }} kg</text>
-        <text v-if='t.delta != null' class='trend-delta'>{{ deltaText(t.delta) }}</text>
+      <view v-if='chartData.length === 0' class='muted'>暂无数据</view>
+      <view v-else class='chart'>
+        <view v-for='c in chartData' :key='c.date' class='chart-col'>
+          <text class='chart-wt'>{{ c.weightKg }}</text>
+          <view class='chart-bar' :style='{ height: c.heightPct + "%" }'></view>
+          <text class='chart-date'>{{ c.date }}</text>
+        </view>
+      </view>
+      <view v-if='trendWithDelta.length > 0' class='trend-list'>
+        <view v-for='t in trendWithDelta' :key='t.date' class='trend-row'>
+          <text class='trend-date'>{{ t.date }}</text>
+          <text class='trend-weight'>{{ t.weightKg }} kg</text>
+          <text v-if='t.delta != null' class='trend-delta'>{{ deltaText(t.delta) }}</text>
+        </view>
       </view>
     </view>
 
@@ -69,6 +78,19 @@ const trendWithDelta = computed(() =>
     delta: i > 0 ? +(t.weightKg - trend.value[i - 1].weightKg).toFixed(1) : null,
   })),
 )
+
+const chartData = computed(() => {
+  if (trend.value.length === 0) return []
+  const weights = trend.value.map(t => t.weightKg)
+  const min = Math.min(...weights)
+  const max = Math.max(...weights)
+  const range = max - min || 1
+  return trend.value.map(t => ({
+    date: t.date.slice(5),
+    weightKg: t.weightKg,
+    heightPct: Math.max(15, ((t.weightKg - min) / range) * 80 + 20),
+  }))
+})
 
 onMounted(load)
 
@@ -126,7 +148,13 @@ async function onAdd() {
 .input { flex: 1; border: 1rpx solid #ddd; border-radius: 8rpx; padding: 12rpx; }
 .muted { color: #999; font-size: 26rpx; margin-bottom: 8rpx; }
 .btn-primary { background: #007aff; color: #fff; }
-.trend-row { display: flex; align-items: center; padding: 12rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.chart { display: flex; align-items: flex-end; height: 300rpx; gap: 8rpx; padding: 16rpx 0; overflow-x: auto; }
+.chart-col { display: flex; flex-direction: column; align-items: center; min-width: 80rpx; height: 100%; justify-content: flex-end; }
+.chart-wt { font-size: 20rpx; color: #333; margin-bottom: 4rpx; }
+.chart-bar { width: 40rpx; background: linear-gradient(180deg, #007aff, #4da6ff); border-radius: 8rpx 8rpx 0 0; }
+.chart-date { font-size: 20rpx; color: #999; margin-top: 4rpx; }
+.trend-list { margin-top: 16rpx; }
+.trend-row { display: flex; align-items: center; padding: 8rpx 0; border-bottom: 1rpx solid #f0f0f0; }
 .trend-date { width: 200rpx; color: #666; font-size: 26rpx; }
 .trend-weight { flex: 1; font-weight: bold; }
 .trend-delta { color: #999; font-size: 26rpx; }

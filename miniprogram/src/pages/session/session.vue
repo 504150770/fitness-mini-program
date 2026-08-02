@@ -7,7 +7,7 @@
       </view>
       <view v-if='session' class='stats'>
         <view class='stat'><text class='stat-val'>{{ totalVolume }}</text><text class='stat-label'>总容量kg</text></view>
-        <view class='stat'><text class='stat-val'>{{ exerciseGroups.length }}</text><text class='stat-label'>动作数</text></view>
+        <view class='stat'><text class='stat-val'>{{ allEntries.length }}</text><text class='stat-label'>动作数</text></view>
         <view class='stat'><text class='stat-val'>{{ session.logs.length }}</text><text class='stat-label'>总组数</text></view>
       </view>
     </view>
@@ -17,14 +17,16 @@
       <view v-for='pe in plannedExercises' :key='pe.exerciseId' class='plan-ex'>
         <text class='plan-ex-name'>{{ pe.exerciseName }}</text>
         <text class='muted'>{{ pe.sets }}组 x {{ pe.reps }}{{ pe.weightKg ? " / " + pe.weightKg + "kg" : "" }}</text>
-        <button v-if='!hasLogsFor(pe.exerciseId)' size='mini' @click='quickAdd(pe)'>开始</button>
+        <button v-if='!hasLogsFor(pe.exerciseId) && !isPending(pe.exerciseId)' size='mini' @click='quickAdd(pe)'>开始</button>
+        <text v-else-if='!hasLogsFor(pe.exerciseId)' class='muted'>待记录</text>
+        <text v-else class='done-badge'>已完成</text>
       </view>
     </view>
 
-    <view v-for='g in exerciseGroups' :key='g.exerciseId' class='card'>
+    <view v-for='g in allEntries' :key='g.exerciseId' class='card'>
       <view class='ex-head'>
         <text class='ex-name'>{{ g.exerciseName }}</text>
-        <text class='muted'>{{ g.logs.length }}组</text>
+        <text class='muted'>{{ g.logs.length > 0 ? g.logs.length + "组" : "待记录" }}</text>
       </view>
       <view v-for='log in g.logs' :key='log.id' class='log-row'>
         <text class='log-set'>第{{ log.setOrder }}组</text>
@@ -72,6 +74,7 @@ import { getPendingExercises, clearPendingExercises } from '../../api/state'
 const sessionId = ref('')
 const session = ref<SessionInfo | null>(null)
 const plannedExercises = ref<PlannedExercise[]>([])
+const pendingExercises = ref<{ exerciseId: string; exerciseName: string }[]>([])
 const forms = reactive<Record<string, { weight: string; reps: string }>>({})
 const showPicker = ref(false)
 const pickList = ref<ExerciseInfo[]>([])
@@ -90,6 +93,15 @@ const exerciseGroups = computed(() => {
   return Object.values(map)
 })
 
+const allEntries = computed(() => {
+  const groups = exerciseGroups.value
+  const logged = new Set(groups.map(g => g.exerciseId))
+  const pending = pendingExercises.value
+    .filter(p => !logged.has(p.exerciseId))
+    .map(p => ({ exerciseId: p.exerciseId, exerciseName: p.exerciseName, logs: [] as SessionLog[] }))
+  return [...groups, ...pending]
+})
+
 onMounted(() => {
   const pages = getCurrentPages()
   const cur = pages[pages.length - 1] as any
@@ -100,21 +112,27 @@ onMounted(() => {
 })
 
 function catLabel(v: string) { return EXERCISE_CATEGORIES.find(c => c.value === v)?.label || v }
-function hasLogsFor(exerciseId: string) { return session.value?.logs.some(l => l.exerciseId === exerciseId) }
+function hasLogsFor(exerciseId: string) { return session.value?.logs.some(l => l.exerciseId === exerciseId) || false }
+function isPending(exerciseId: string) { return pendingExercises.value.some(p => p.exerciseId === exerciseId) }
+
+function ensureForm(exerciseId: string) {
+  if (!forms[exerciseId]) forms[exerciseId] = { weight: '', reps: '' }
+}
 
 async function loadSession() {
   try {
     session.value = await api.getSession(sessionId.value)
-    for (const g of exerciseGroups.value) {
-      if (!forms[g.exerciseId]) forms[g.exerciseId] = { weight: '', reps: '' }
-    }
+    const loggedIds = new Set(session.value.logs.map(l => l.exerciseId))
+    pendingExercises.value = pendingExercises.value.filter(p => !loggedIds.has(p.exerciseId))
+    for (const g of allEntries.value) ensureForm(g.exerciseId)
   } catch {}
 }
 
 function quickAdd(pe: PlannedExercise) {
-  forms[pe.exerciseId] = { weight: pe.weightKg ? String(pe.weightKg) : '', reps: '' }
-  if (!exerciseGroups.value.find(g => g.exerciseId === pe.exerciseId)) {
-    session.value?.logs.push({ id: '_tmp', exerciseId: pe.exerciseId, exerciseName: pe.exerciseName, setOrder: 0, weightKg: 0, reps: 0, volumeKg: 0, isPR: false, note: null })
+  ensureForm(pe.exerciseId)
+  if (pe.weightKg) forms[pe.exerciseId].weight = String(pe.weightKg)
+  if (!isPending(pe.exerciseId) && !hasLogsFor(pe.exerciseId)) {
+    pendingExercises.value.push({ exerciseId: pe.exerciseId, exerciseName: pe.exerciseName })
   }
 }
 
@@ -143,9 +161,11 @@ async function onComplete() {
 
 function onPickSearch() { clearTimeout(pickTimer); pickTimer = setTimeout(loadPickList, 300) }
 async function loadPickList() { try { pickList.value = await api.getExercises({ search: pickSearch.value || undefined }) } catch {} }
-async function onPick(e: ExerciseInfo) {
-  if (!forms[e.id]) forms[e.id] = { weight: '', reps: '' }
-  session.value?.logs.push({ id: '_new_' + e.id, exerciseId: e.id, exerciseName: e.name, setOrder: 0, weightKg: 0, reps: 0, volumeKg: 0, isPR: false, note: null })
+function onPick(e: ExerciseInfo) {
+  ensureForm(e.id)
+  if (!isPending(e.id) && !hasLogsFor(e.id)) {
+    pendingExercises.value.push({ exerciseId: e.id, exerciseName: e.name })
+  }
   showPicker.value = false
 }
 </script>
@@ -166,6 +186,7 @@ async function onPick(e: ExerciseInfo) {
 .plan-ex { display: flex; align-items: center; gap: 16rpx; padding: 12rpx 0; border-bottom: 1rpx solid #f0f0f0; }
 .plan-ex-name { font-size: 30rpx; flex: 1; }
 .muted { color: #999; font-size: 26rpx; }
+.done-badge { color: #34c759; font-size: 24rpx; }
 .ex-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12rpx; }
 .ex-name { font-size: 32rpx; font-weight: bold; }
 .log-row { display: flex; align-items: center; gap: 12rpx; padding: 12rpx 0; border-bottom: 1rpx solid #f5f5f5; }

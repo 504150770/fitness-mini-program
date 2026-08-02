@@ -12,6 +12,17 @@
       </view>
     </view>
 
+    <view v-if='exerciseVolumes.length > 0' class='card'>
+      <view class='section-title'>容量分布</view>
+      <view v-for='ev in exerciseVolumes' :key='ev.name' class='vol-row'>
+        <text class='vol-name'>{{ ev.name }}</text>
+        <view class='vol-bar-bg'>
+          <view class='vol-bar' :style='barWidth(ev.pct)'></view>
+        </view>
+        <text class='vol-val'>{{ ev.volume }}kg</text>
+      </view>
+    </view>
+
     <view v-for='g in exerciseGroups' :key='g.exerciseId' class='card'>
       <view class='ex-head'>
         <text class='ex-name'>{{ g.exerciseName }}</text>
@@ -45,6 +56,19 @@ const exerciseGroups = computed(() => {
   return Object.values(map)
 })
 
+const exerciseVolumes = computed(() => {
+  if (!session.value || session.value.logs.length === 0) return []
+  const map: Record<string, number> = {}
+  const names: Record<string, string> = {}
+  for (const log of session.value.logs) {
+    map[log.exerciseId] = (map[log.exerciseId] || 0) + log.volumeKg
+    names[log.exerciseId] = log.exerciseName
+  }
+  const arr = Object.entries(map).map(([id, volume]) => ({ name: names[id], volume: +volume.toFixed(1) }))
+  const maxVol = Math.max(...arr.map(a => a.volume), 1)
+  return arr.map(a => ({ ...a, pct: (a.volume / maxVol) * 100 }))
+})
+
 const duration = computed(() => {
   if (!session.value?.endedAt) return ''
   const ms = new Date(session.value.endedAt).getTime() - new Date(session.value.startedAt).getTime()
@@ -52,6 +76,10 @@ const duration = computed(() => {
   if (min < 60) return min + '分钟'
   return Math.floor(min / 60) + '小时' + (min % 60) + '分'
 })
+
+function barWidth(pct: number) {
+  return { width: pct + '%' }
+}
 
 onMounted(() => {
   const pages = getCurrentPages()
@@ -78,6 +106,12 @@ function formatDate(iso: string): string {
 .meta { display: flex; gap: 16rpx; margin-top: 12rpx; flex-wrap: wrap; }
 .muted { color: #999; font-size: 26rpx; }
 .vol { color: #007aff; font-weight: bold; font-size: 26rpx; }
+.section-title { font-size: 30rpx; font-weight: bold; margin-bottom: 16rpx; }
+.vol-row { display: flex; align-items: center; gap: 12rpx; padding: 8rpx 0; }
+.vol-name { width: 160rpx; font-size: 26rpx; color: #333; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.vol-bar-bg { flex: 1; height: 24rpx; background: #f0f0f0; border-radius: 12rpx; overflow: hidden; }
+.vol-bar { height: 100%; background: linear-gradient(90deg, #007aff, #4da6ff); border-radius: 12rpx; }
+.vol-val { width: 120rpx; text-align: right; font-size: 24rpx; font-weight: bold; color: #007aff; }
 .ex-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12rpx; }
 .ex-name { font-size: 32rpx; font-weight: bold; }
 .log-row { display: flex; align-items: center; gap: 12rpx; padding: 12rpx 0; border-bottom: 1rpx solid #f5f5f5; }
