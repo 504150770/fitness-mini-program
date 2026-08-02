@@ -24,6 +24,7 @@ export interface DietRecordInput { mealType: string; foodName: string; caloriesK
 export interface DietSummary { records: DietRecord[]; caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }
 export interface CheckInStatus { hasTraining: boolean; hasDiet: boolean }
 export interface HomeData { todayTraining: { id: string; name: string; status: string; totalVolumeKg: number } | null; todayDiet: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }; currentWeight: number | null; streak: number; checkIn: CheckInStatus }
+export interface StatsData { totalSessions: number; totalVolumeKg: number; totalSets: number; prCount: number; trainingDaysThisMonth: number; weeklyVolume: { date: string; volume: number }[]; weeklyCalories: { date: string; calories: number }[] }
 
 export const EXERCISE_CATEGORIES = [
   { value: 'CHEST', label: '胸' },
@@ -81,4 +82,5 @@ export const api = {
   getCheckinToday: () => request<CheckInStatus>({ url: '/checkins/today' }),
   getStreak: () => request<{ streak: number }>({ url: '/checkins/streak' }),
   getHome: () => request<HomeData>({ url: '/home' }),
+  getStats: () => request<StatsData>({ url: '/stats' }),
 }

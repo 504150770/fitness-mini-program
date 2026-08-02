@@ -9,7 +9,9 @@
     { "path": "pages/session/session", "style": { "navigationBarTitleText": "训练中" } },
     { "path": "pages/history/history", "style": { "navigationBarTitleText": "训练历史" } },
     { "path": "pages/session-detail/session-detail", "style": { "navigationBarTitleText": "训练详情" } },
-    { "path": "pages/diet/diet", "style": { "navigationBarTitleText": "饮食记录" } }
+    { "path": "pages/diet/diet", "style": { "navigationBarTitleText": "饮食记录" } },
+    { "path": "pages/pr/pr", "style": { "navigationBarTitleText": "个人最佳" } },
+    { "path": "pages/stats/stats", "style": { "navigationBarTitleText": "训练统计" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",

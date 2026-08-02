@@ -1,18 +1,18 @@
 <template>
   <view class='page'>
     <view class='home-grid'>
-      <view class='home-card' @click='go("/pages/history/history")'>
+      <view class='home-card' @click='go(history)'>
         <text class='home-val'>{{ home?.streak ?? '-' }}</text>
         <text class='home-label'>连续打卡</text>
         <text v-if='home?.todayTraining' class='home-sub'>{{ home.todayTraining.status === "ACTIVE" ? "训练中" : "已训练" }}</text>
         <text v-else class='home-sub'>今日未练</text>
       </view>
-      <view class='home-card' @click='go("/pages/diet/diet")'>
+      <view class='home-card' @click='go(diet)'>
         <text class='home-val'>{{ home?.todayDiet.caloriesKcal ?? '-' }}</text>
         <text class='home-label'>今日热量kcal</text>
         <text class='home-sub'>{{ home?.checkIn.hasDiet ? "已记录" : "未记录" }}</text>
       </view>
-      <view class='home-card' @click='go("/pages/body/body")'>
+      <view class='home-card' @click='go(body)'>
         <text class='home-val'>{{ home?.currentWeight != null ? home.currentWeight : '-' }}</text>
         <text class='home-label'>当前体重kg</text>
         <text class='home-sub'>点击记录</text>
@@ -26,12 +26,14 @@
 
     <view class='card'>
       <view class='row'>模块导航</view>
-      <button @click='go("/pages/profile/profile")'>用户资料</button>
-      <button @click='go("/pages/body/body")'>身体数据</button>
-      <button @click='go("/pages/exercise/exercise")'>动作库</button>
-      <button @click='go("/pages/plan/plan")'>训练计划</button>
-      <button @click='go("/pages/history/history")'>训练历史</button>
-      <button @click='go("/pages/diet/diet")'>饮食记录</button>
+      <button @click='go(profile)'>用户资料</button>
+      <button @click='go(body)'>身体数据</button>
+      <button @click='go(exercise)'>动作库</button>
+      <button @click='go(plan)'>训练计划</button>
+      <button @click='go(history)'>训练历史</button>
+      <button @click='go(pr)'>PR记录</button>
+      <button @click='go(stats)'>训练统计</button>
+      <button @click='go(diet)'>饮食记录</button>
     </view>
 
     <view class='card'>
@@ -53,6 +55,15 @@ const home = ref<HomeData | null>(null)
 const userInfo = ref('')
 const openid = ref('tester001')
 const hasToken = computed(() => !!getToken())
+
+const profile = '/pages/profile/profile'
+const body = '/pages/body/body'
+const exercise = '/pages/exercise/exercise'
+const plan = '/pages/plan/plan'
+const history = '/pages/history/history'
+const diet = '/pages/diet/diet'
+const pr = '/pages/pr/pr'
+const stats = '/pages/stats/stats'
 
 onMounted(() => { if (hasToken.value) { loadHome(); onMe() } })
 

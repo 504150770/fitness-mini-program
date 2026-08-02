@@ -10,6 +10,7 @@ import { sessionRouter } from './routes/session.routes';
 import { dietRouter } from './routes/diet.routes';
 import { checkinRouter } from './routes/checkin.routes';
 import { homeRouter } from './routes/home.routes';
+import { statsRouter } from './routes/stats.routes';
 import { errorHandler, notFound } from './middlewares/error.middleware';
 
 const app = express();
@@ -35,6 +36,7 @@ app.use('/api/v1/sessions', sessionRouter);
 app.use('/api/v1/diet', dietRouter);
 app.use('/api/v1/checkins', checkinRouter);
 app.use('/api/v1/home', homeRouter);
+app.use('/api/v1/stats', statsRouter);
 if (config.isDev) {
   app.use('/api/v1/auth', devAuthRouter);
 }
