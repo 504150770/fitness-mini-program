@@ -16,8 +16,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile     UserProfile?
-  bodyRecords BodyRecord[]
+  profile         UserProfile?
+  bodyRecords     BodyRecord[]
+  exercises       Exercise[]
+  workoutPlans    WorkoutPlan[]
+  sessions        WorkoutSession[]
+  dietRecords     DietRecord[]
+  checkIns        CheckIn[]
+  personalRecords PersonalRecord[]
 }
 
 model UserProfile {
@@ -43,4 +49,140 @@ model BodyRecord {
   createdAt  DateTime @default(now())
 
   @@index([userId, recordedAt])
+}
+
+model Exercise {
+  id          String   @id @default(cuid())
+  name        String
+  category    String
+  muscleGroup String?
+  isSystem    Boolean  @default(false)
+  creatorId   String?
+  creator     User?    @relation(fields: [creatorId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  planItems WorkoutPlanExercise[]
+
+  @@index([category])
+  @@index([creatorId])
+}
+
+model WorkoutPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  note      String?
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  exercises WorkoutPlanExercise[]
+
+  @@index([userId])
+}
+
+model WorkoutPlanExercise {
+  id         String      @id @default(cuid())
+  planId     String
+  plan       WorkoutPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  exerciseId String
+  exercise   Exercise    @relation(fields: [exerciseId], references: [id])
+  sets       Int         @default(3)
+  reps       String      @default("8-12")
+  weightKg   Float?
+  sortOrder  Int         @default(0)
+  note       String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  @@index([planId, sortOrder])
+}
+
+model WorkoutSession {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  planId        String?
+  planName      String?
+  name          String
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  status        String    @default("ACTIVE")
+  totalVolumeKg Float     @default(0)
+  note          String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  logs WorkoutLog[]
+
+  @@index([userId, startedAt])
+}
+
+model WorkoutLog {
+  id           String         @id @default(cuid())
+  sessionId    String
+  session      WorkoutSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId   String
+  exerciseName String
+  setOrder     Int            @default(1)
+  weightKg     Float
+  reps         Int
+  volumeKg     Float
+  isPR         Boolean        @default(false)
+  note         String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([sessionId, exerciseId, setOrder])
+}
+
+model PersonalRecord {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  exerciseId    String
+  exerciseName  String
+  maxWeightKg   Float
+  maxWeightReps Int
+  sessionId     String?
+  achievedAt    DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
+}
+
+model DietRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  mealType     String
+  foodName     String
+  caloriesKcal Int
+  proteinG     Float?
+  carbsG       Float?
+  fatG         Float?
+  recordedAt   DateTime @default(now())
+  note         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId, recordedAt])
+}
+
+model CheckIn {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  dateKey     String
+  hasTraining Boolean  @default(false)
+  hasDiet     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([userId, dateKey])
+  @@index([userId, dateKey])
 }

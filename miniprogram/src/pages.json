@@ -1,17 +1,11 @@
 {
   "pages": [
-    {
-      "path": "pages/index/index",
-      "style": { "navigationBarTitleText": "健身小程序" }
-    },
-    {
-      "path": "pages/profile/profile",
-      "style": { "navigationBarTitleText": "用户资料" }
-    },
-    {
-      "path": "pages/body/body",
-      "style": { "navigationBarTitleText": "身体数据" }
-    }
+    { "path": "pages/index/index", "style": { "navigationBarTitleText": "健身小程序" } },
+    { "path": "pages/profile/profile", "style": { "navigationBarTitleText": "用户资料" } },
+    { "path": "pages/body/body", "style": { "navigationBarTitleText": "身体数据" } },
+    { "path": "pages/exercise/exercise", "style": { "navigationBarTitleText": "动作库" } },
+    { "path": "pages/plan/plan", "style": { "navigationBarTitleText": "训练计划" } },
+    { "path": "pages/plan-detail/plan-detail", "style": { "navigationBarTitleText": "训练日详情" } }
   ],
   "globalStyle": {
     "navigationBarTextStyle": "black",

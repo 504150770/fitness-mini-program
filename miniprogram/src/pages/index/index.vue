@@ -1,28 +1,24 @@
 <template>
   <view class='page'>
-    <view class='title'>健身小程序 · 联调入口</view>
-
+    <view class='title'>健身小程序</view>
     <view class='card'>
       <view class='row'>模块导航</view>
-      <button @click='goProfile'>用户资料</button>
-      <button @click='goBody'>身体数据</button>
+      <button @click='go("/pages/profile/profile")'>用户资料</button>
+      <button @click='go("/pages/body/body")'>身体数据</button>
+      <button @click='go("/pages/exercise/exercise")'>动作库</button>
+      <button @click='go("/pages/plan/plan")'>训练计划</button>
     </view>
-
     <view class='card'>
       <view class='row'>健康状态: {{ health || '未检查' }}</view>
       <button class='btn-primary' @click='onHealth'>健康检查</button>
     </view>
-
     <view class='card'>
       <view class='row'>当前用户: {{ userInfo || '未登录' }}</view>
       <input class='input' v-model='openid' placeholder='测试 openid' />
       <button class='btn-primary' @click='onDevLogin'>开发登录</button>
-      <button @click='onMe' :disabled='!hasToken'>读取当前用户(/me)</button>
+      <button @click='onMe' :disabled='!hasToken'>读取当前用户</button>
     </view>
-
-    <view class='card'>
-      <button @click='onError'>触发错误(测试统一提示)</button>
-    </view>
+    <view class='card'><button @click='onError'>触发错误(测试统一提示)</button></view>
   </view>
 </template>
 
@@ -36,32 +32,17 @@ const userInfo = ref('')
 const openid = ref('tester001')
 const hasToken = computed(() => !!getToken())
 
-function goProfile() { uni.navigateTo({ url: '/pages/profile/profile' }) }
-function goBody() { uni.navigateTo({ url: '/pages/body/body' }) }
+function go(url: string) { uni.navigateTo({ url }) }
 
 async function onHealth() {
-  try {
-    const d = await api.health()
-    health.value = d.status + ' / ' + d.env
-  } catch {}
+  try { const d = await api.health(); health.value = d.status + ' / ' + d.env } catch {}
 }
-
 async function onDevLogin() {
-  try {
-    const d = await api.devLogin(openid.value)
-    setToken(d.token)
-    userInfo.value = d.user.openid
-    uni.showToast({ title: '登录成功', icon: 'success' })
-  } catch {}
+  try { const d = await api.devLogin(openid.value); setToken(d.token); userInfo.value = d.user.openid; uni.showToast({ title: '登录成功', icon: 'success' }) } catch {}
 }
-
 async function onMe() {
-  try {
-    const d = await api.me()
-    userInfo.value = d.openid
-  } catch {}
+  try { const d = await api.me(); userInfo.value = d.openid } catch {}
 }
-
 async function onError() {
   try { await api.testError() } catch {}
 }

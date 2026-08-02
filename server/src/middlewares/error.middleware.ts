@@ -4,7 +4,7 @@ import { fail } from '../utils/response';
 export class HttpError extends Error {
   status: number;
   code: number;
-  constructor(status: number, message: string, code = -1) {
+  constructor(status: number, message: string, code = status) {
     super(message);
     this.name = 'HttpError';
     this.status = status;
