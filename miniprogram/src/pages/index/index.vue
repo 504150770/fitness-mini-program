@@ -1,6 +1,11 @@
 <template>
   <view class='page'>
-    <view class='title'>健身小程序 · 阶段0 联调</view>
+    <view class='title'>健身小程序 · 联调入口</view>
+
+    <view class='card'>
+      <view class='row'>模块导航</view>
+      <button @click='goProfile'>用户资料</button>
+    </view>
 
     <view class='card'>
       <view class='row'>健康状态: {{ health || '未检查' }}</view>
@@ -29,6 +34,8 @@ const health = ref('')
 const userInfo = ref('')
 const openid = ref('tester001')
 const hasToken = computed(() => !!getToken())
+
+function goProfile() { uni.navigateTo({ url: '/pages/profile/profile' }) }
 
 async function onHealth() {
   try {

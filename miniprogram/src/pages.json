@@ -5,6 +5,12 @@
                       "style":  {
                                     "navigationBarTitleText":  "健身小程序"
                                 }
+                  },
+                  {
+                      "path":  "pages/profile/profile",
+                      "style":  {
+                                    "navigationBarTitleText":  "用户资料"
+                                }
                   }
               ],
     "globalStyle":  {

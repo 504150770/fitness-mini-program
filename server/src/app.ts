@@ -2,6 +2,7 @@ import express from 'express';
 import { config } from './config';
 import { healthRouter } from './routes/health.routes';
 import { authRouter, devAuthRouter } from './routes/auth.routes';
+import { userRouter } from './routes/user.routes';
 import { errorHandler, notFound } from './middlewares/error.middleware';
 
 const app = express();
@@ -19,6 +20,7 @@ if (config.isDev) {
 
 app.use('/api/v1/health', healthRouter);
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/users', userRouter);
 if (config.isDev) {
   app.use('/api/v1/auth', devAuthRouter);
 }

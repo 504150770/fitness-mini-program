@@ -15,4 +15,18 @@ model User {
   avatarUrl String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  profile UserProfile?
+}
+
+// 用户资料（与 User 一对一；gender 用字符串因 SQLite 不支持枚举）
+model UserProfile {
+  userId    String   @id
+  user      User     @relation(fields: [userId], references: [id])
+  gender    String?  // 'MALE' | 'FEMALE' | 'OTHER'
+  birthDate DateTime?  // 年龄由此派生
+  heightCm  Float?   // 单位：厘米
+  goal      String?  // 健身目标
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
