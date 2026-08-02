@@ -17,6 +17,25 @@ export interface ProfileInput {
   heightCm?: number | null
   goal?: string | null
 }
+export interface BodyRecord {
+  id: string
+  userId: string
+  recordedAt: string
+  weightKg: number
+  bodyFatPct: number | null
+  photoUrl: string | null
+  note: string | null
+}
+export interface BodyRecordInput {
+  weightKg: number
+  bodyFatPct?: number | null
+  note?: string | null
+  recordedAt?: string | null
+}
+export interface BodyTrendPoint {
+  date: string
+  weightKg: number
+}
 
 export const api = {
   health: () => request<HealthInfo>({ url: '/health' }),
@@ -26,4 +45,12 @@ export const api = {
   testError: () => request({ url: '/this-path-does-not-exist' }),
   getProfile: () => request<UserProfileInfo | null>({ url: '/users/profile' }),
   upsertProfile: (data: ProfileInput) => request<UserProfileInfo>({ url: '/users/profile', method: 'PUT', data }),
+
+  getBodyRecords: (params?: { from?: string; to?: string; limit?: number }) =>
+    request<BodyRecord[]>({ url: '/body/records', method: 'GET', data: params }),
+  createBodyRecord: (data: BodyRecordInput) =>
+    request<BodyRecord>({ url: '/body/records', method: 'POST', data }),
+  getBodyLatest: () => request<BodyRecord | null>({ url: '/body/latest' }),
+  getBodyTrend: (limit?: number) =>
+    request<BodyTrendPoint[]>({ url: '/body/trend', method: 'GET', data: limit ? { limit } : undefined }),
 }

@@ -16,17 +16,31 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  profile UserProfile?
+  profile     UserProfile?
+  bodyRecords BodyRecord[]
 }
 
-// 用户资料（与 User 一对一；gender 用字符串因 SQLite 不支持枚举）
 model UserProfile {
-  userId    String   @id
-  user      User     @relation(fields: [userId], references: [id])
-  gender    String?  // 'MALE' | 'FEMALE' | 'OTHER'
-  birthDate DateTime?  // 年龄由此派生
-  heightCm  Float?   // 单位：厘米
-  goal      String?  // 健身目标
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId    String    @id
+  user      User      @relation(fields: [userId], references: [id])
+  gender    String?
+  birthDate DateTime?
+  heightCm  Float?
+  goal      String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model BodyRecord {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  recordedAt DateTime @default(now())
+  weightKg   Float
+  bodyFatPct Float?
+  photoUrl   String?
+  note       String?
+  createdAt  DateTime @default(now())
+
+  @@index([userId, recordedAt])
 }

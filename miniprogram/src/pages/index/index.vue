@@ -5,6 +5,7 @@
     <view class='card'>
       <view class='row'>模块导航</view>
       <button @click='goProfile'>用户资料</button>
+      <button @click='goBody'>身体数据</button>
     </view>
 
     <view class='card'>
@@ -36,6 +37,7 @@ const openid = ref('tester001')
 const hasToken = computed(() => !!getToken())
 
 function goProfile() { uni.navigateTo({ url: '/pages/profile/profile' }) }
+function goBody() { uni.navigateTo({ url: '/pages/body/body' }) }
 
 async function onHealth() {
   try {
