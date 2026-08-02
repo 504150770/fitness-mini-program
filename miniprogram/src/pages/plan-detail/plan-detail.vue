@@ -6,6 +6,10 @@
     </view>
 
     <view class='card'>
+      <button class='btn-start' @click='onStart'>开始训练</button>
+    </view>
+
+    <view class='card'>
       <button class='btn-add' @click='onShowPicker'>+ 添加动作</button>
     </view>
 
@@ -66,6 +70,7 @@
 <script setup lang='ts'>
 import { ref, reactive, onMounted } from 'vue'
 import { api, type PlanInfo, type PlanExercise, type ExerciseInfo, EXERCISE_CATEGORIES } from '../../api'
+import { setPendingExercises } from '../../api/state'
 
 const planId = ref('')
 const plan = ref<PlanInfo | null>(null)
@@ -140,6 +145,14 @@ async function onDelEx(ex: PlanExercise) {
   })
 }
 
+async function onStart() {
+  try {
+    const result = await api.startSession({ planId: planId.value })
+    setPendingExercises(result.plannedExercises)
+    uni.navigateTo({ url: '/pages/session/session?id=' + result.session.id })
+  } catch {}
+}
+
 function onShowPicker() { showPicker.value = true; pickSearch.value = ''; pickCat.value = ''; loadPickList() }
 function onPickSearch() { clearTimeout(pickTimer); pickTimer = setTimeout(loadPickList, 300) }
 
@@ -165,6 +178,7 @@ async function onPick(e: ExerciseInfo) {
 .plan-name { font-size: 36rpx; font-weight: bold; }
 .muted { color: #999; font-size: 26rpx; }
 .center { text-align: center; padding: 48rpx; }
+.btn-start { background: #ff9500; color: #fff; margin-bottom: 12rpx; }
 .btn-add { background: #34c759; color: #fff; }
 .ex-item { }
 .ex-head { display: flex; align-items: center; gap: 16rpx; margin-bottom: 16rpx; }

@@ -6,6 +6,7 @@ import { userRouter } from './routes/user.routes';
 import { bodyRouter } from './routes/body.routes';
 import { exerciseRouter } from './routes/exercise.routes';
 import { planRouter } from './routes/plan.routes';
+import { sessionRouter } from './routes/session.routes';
 import { errorHandler, notFound } from './middlewares/error.middleware';
 
 const app = express();
@@ -27,6 +28,7 @@ app.use('/api/v1/users', userRouter);
 app.use('/api/v1/body', bodyRouter);
 app.use('/api/v1/exercises', exerciseRouter);
 app.use('/api/v1/plans', planRouter);
+app.use('/api/v1/sessions', sessionRouter);
 if (config.isDev) {
   app.use('/api/v1/auth', devAuthRouter);
 }
