@@ -1,0 +1,9 @@
+import { Router } from 'express';
+import { dietController } from '../controllers/diet.controller';
+import { authRequired } from '../middlewares/auth.middleware';
+export const dietRouter = Router();
+dietRouter.get('/summary', authRequired, dietController.summary);
+dietRouter.get('/', authRequired, dietController.list);
+dietRouter.post('/', authRequired, dietController.create);
+dietRouter.put('/:id', authRequired, dietController.update);
+dietRouter.delete('/:id', authRequired, dietController.remove);

@@ -19,6 +19,11 @@ export interface SessionListItem { id: string; name: string; planName: string | 
 export interface PlannedExercise { exerciseId: string; exerciseName: string; category: string; sets: number; reps: string; weightKg: number | null }
 export interface StartSessionResult { session: SessionInfo; plannedExercises: PlannedExercise[] }
 export interface PersonalRecordInfo { id: string; exerciseId: string; exerciseName: string; maxWeightKg: number; maxWeightReps: number; achievedAt: string }
+export interface DietRecord { id: string; mealType: string; foodName: string; caloriesKcal: number; proteinG: number | null; carbsG: number | null; fatG: number | null; recordedAt: string; note: string | null }
+export interface DietRecordInput { mealType: string; foodName: string; caloriesKcal: number; proteinG?: number; carbsG?: number; fatG?: number; note?: string }
+export interface DietSummary { records: DietRecord[]; caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }
+export interface CheckInStatus { hasTraining: boolean; hasDiet: boolean }
+export interface HomeData { todayTraining: { id: string; name: string; status: string; totalVolumeKg: number } | null; todayDiet: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }; currentWeight: number | null; streak: number; checkIn: CheckInStatus }
 
 export const EXERCISE_CATEGORIES = [
   { value: 'CHEST', label: '胸' },
@@ -66,4 +71,14 @@ export const api = {
   removeSessionLog: (sessionId: string, logId: string) => request({ url: '/sessions/' + sessionId + '/logs/' + logId, method: 'DELETE' }),
   copySessionLog: (sessionId: string, exerciseId: string) => request<SessionLog>({ url: '/sessions/' + sessionId + '/logs/copy', method: 'POST', data: { exerciseId } }),
   getPRs: () => request<PersonalRecordInfo[]>({ url: '/sessions/prs' }),
+
+  getDietRecords: (date?: string) => request<DietRecord[]>({ url: '/diet', method: 'GET', data: date ? { date } : undefined }),
+  createDietRecord: (data: DietRecordInput) => request<DietRecord>({ url: '/diet', method: 'POST', data }),
+  updateDietRecord: (id: string, data: Partial<DietRecordInput>) => request<DietRecord>({ url: '/diet/' + id, method: 'PUT', data }),
+  deleteDietRecord: (id: string) => request({ url: '/diet/' + id, method: 'DELETE' }),
+  getDietSummary: (date?: string) => request<DietSummary>({ url: '/diet/summary', method: 'GET', data: date ? { date } : undefined }),
+  checkin: (type: string) => request<CheckInStatus>({ url: '/checkins', method: 'POST', data: { type } }),
+  getCheckinToday: () => request<CheckInStatus>({ url: '/checkins/today' }),
+  getStreak: () => request<{ streak: number }>({ url: '/checkins/streak' }),
+  getHome: () => request<HomeData>({ url: '/home' }),
 }

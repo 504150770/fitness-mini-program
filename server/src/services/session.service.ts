@@ -1,4 +1,5 @@
 import { prisma } from '../config/db';
+import { checkinService } from './checkin.service';
 import { HttpError } from '../middlewares/error.middleware';
 
 function validateWeight(v: unknown): number {
@@ -72,7 +73,7 @@ export const sessionService = {
     if (session.status === 'COMPLETED') throw new HttpError(400, '训练已完成');
     const logs = await prisma.workoutLog.findMany({ where: { sessionId: id } });
     const totalVolume = logs.reduce((sum, l) => sum + l.volumeKg, 0);
-    return prisma.workoutSession.update({
+    const updated = await prisma.workoutSession.update({
       where: { id },
       data: {
         status: 'COMPLETED',
@@ -81,6 +82,8 @@ export const sessionService = {
         note: input?.note !== undefined ? (input.note ? input.note.slice(0, 200) : null) : session.note,
       },
     });
+    await checkinService.ensure(userId, 'TRAINING');
+    return updated;
   },
 
   async addLog(userId: string, sessionId: string, input: { exerciseId: string; weightKg: number; reps: number; note?: string }) {
