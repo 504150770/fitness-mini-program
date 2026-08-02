@@ -25,6 +25,7 @@ export interface DietSummary { records: DietRecord[]; caloriesKcal: number; prot
 export interface CheckInStatus { hasTraining: boolean; hasDiet: boolean }
 export interface HomeData { todayTraining: { id: string; name: string; status: string; totalVolumeKg: number } | null; todayDiet: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }; currentWeight: number | null; streak: number; checkIn: CheckInStatus }
 export interface StatsData { totalSessions: number; totalVolumeKg: number; totalSets: number; prCount: number; trainingDaysThisMonth: number; weeklyVolume: { date: string; volume: number }[]; weeklyCalories: { date: string; calories: number }[] }
+export interface ExerciseDetails { exercise: ExerciseInfo; pr: { maxWeightKg: number; maxWeightReps: number; achievedAt: string } | null; recentLogs: { id: string; weightKg: number; reps: number; volumeKg: number; isPR: boolean; setOrder: number; sessionName: string; sessionDate: string }[] }
 
 export const EXERCISE_CATEGORIES = [
   { value: 'CHEST', label: '胸' },
@@ -83,4 +84,5 @@ export const api = {
   getStreak: () => request<{ streak: number }>({ url: '/checkins/streak' }),
   getHome: () => request<HomeData>({ url: '/home' }),
   getStats: () => request<StatsData>({ url: '/stats' }),
+  getExerciseDetails: (id: string) => request<ExerciseDetails>({ url: '/exercises/' + id + '/details' }),
 }

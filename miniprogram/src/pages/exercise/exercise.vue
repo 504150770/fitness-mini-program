@@ -32,7 +32,7 @@
       </view>
     </view>
 
-    <view v-for='e in exercises' :key='e.id' class='card item'>
+    <view v-for='e in exercises' :key='e.id' class='card item' @click='goDetail(e.id)'>
       <view class='item-main'>
         <text class='item-name'>{{ e.name }}</text>
         <text class='tag' :class='e.isSystem ? "tag-sys" : "tag-user"'>{{ e.isSystem ? '系统' : '自定义' }}</text>
@@ -42,8 +42,8 @@
         <text v-if='e.muscleGroup' class='muted'>{{ e.muscleGroup }}</text>
       </view>
       <view v-if='!e.isSystem' class='item-actions'>
-        <button size='mini' @click='onEdit(e)'>编辑</button>
-        <button size='mini' class='btn-warn' @click='onDelete(e)'>删除</button>
+        <button size='mini' @click.stop='onEdit(e)'>编辑</button>
+        <button size='mini' class='btn-warn' @click.stop='onDelete(e)'>删除</button>
       </view>
     </view>
 
@@ -78,6 +78,7 @@ async function load() {
 }
 
 function onCat(v: string) { category.value = v; load() }
+function goDetail(id: string) { uni.navigateTo({ url: '/pages/exercise-detail/exercise-detail?id=' + id }) }
 function catLabel(v: string) { return EXERCISE_CATEGORIES.find(c => c.value === v)?.label || v }
 
 function onCatPick(e: any) { catIndex.value = Number(e.detail.value) }

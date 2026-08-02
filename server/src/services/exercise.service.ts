@@ -4,6 +4,10 @@ import type { Prisma } from '@prisma/client';
 
 const CATEGORIES = ['CHEST', 'BACK', 'SHOULDER', 'LEG', 'ARM', 'CORE'];
 
+function toDetailsDto(e: { id: string; name: string; category: string; muscleGroup: string | null; isSystem: boolean; creatorId: string | null }) {
+  return { id: e.id, name: e.name, category: e.category, muscleGroup: e.muscleGroup, isSystem: e.isSystem, creatorId: e.creatorId };
+}
+
 export function isValidCategory(c: string): boolean {
   return CATEGORIES.includes(c);
 }
@@ -54,6 +58,22 @@ export const exerciseService = {
       data.muscleGroup = input.muscleGroup ? input.muscleGroup.trim().slice(0, 50) : null;
     }
     return prisma.exercise.update({ where: { id }, data });
+  },
+
+  async getDetails(userId: string, id: string) {
+    const ex = await prisma.exercise.findUnique({ where: { id } });
+    if (!ex) throw new HttpError(404, '动作不存在');
+    if (!ex.isSystem && ex.creatorId !== userId) throw new HttpError(403, '无权访问');
+    const pr = await prisma.personalRecord.findUnique({
+      where: { userId_exerciseId: { userId, exerciseId: id } },
+    });
+    const logs = await prisma.workoutLog.findMany({
+      where: { exerciseId: id, session: { userId, status: 'COMPLETED' } },
+      include: { session: { select: { name: true, startedAt: true } } },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+    });
+    return { exercise: toDetailsDto(ex), pr: pr ? { maxWeightKg: pr.maxWeightKg, maxWeightReps: pr.maxWeightReps, achievedAt: pr.achievedAt.toISOString() } : null, recentLogs: logs.map(l => ({ id: l.id, weightKg: l.weightKg, reps: l.reps, volumeKg: l.volumeKg, isPR: l.isPR, setOrder: l.setOrder, sessionName: l.session.name, sessionDate: l.session.startedAt.toISOString() })) };
   },
 
   async remove(userId: string, id: string) {

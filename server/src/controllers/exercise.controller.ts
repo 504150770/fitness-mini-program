@@ -40,6 +40,13 @@ export const exerciseController = {
     } catch (e) { next(e); }
   },
 
+  async details(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const d = await exerciseService.getDetails(req.userId as string, req.params.id);
+      res.json(success(d));
+    } catch (e) { next(e); }
+  },
+
   async remove(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       await exerciseService.remove(req.userId as string, req.params.id);
