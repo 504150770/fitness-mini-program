@@ -9,7 +9,8 @@
                     "prisma:generate":  "prisma generate",
                     "db:generate":  "prisma generate",
                     "db:diff":  "prisma migrate diff --from-schema-datasource prisma/schema.prisma --to-schema-datamodel prisma/schema.prisma --script",
-                    "db:apply":  "prisma db execute --file prisma/migration.sql --schema prisma/schema.prisma"
+                    "db:apply":  "prisma db execute --file prisma/migration.sql --schema prisma/schema.prisma",
+                    "db:seed":  "tsx prisma/seed.ts"
                 },
     "dependencies":  {
                          "@prisma/client":  "^5.22.0",
