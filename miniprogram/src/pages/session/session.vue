@@ -63,11 +63,31 @@
         </scroll-view>
       </view>
     </view>
+
+    <view v-if='restTimer.active' class='rest-timer'>
+      <view class='rest-bar'><view class='rest-fill' :style='restBarStyle'></view></view>
+      <view class='rest-content'>
+        <view class='rest-info'>
+          <text class='rest-count'>{{ restDisplay }}</text>
+          <text class='rest-status'>{{ restTimer.paused ? '已暂停' : '休息中' }}</text>
+        </view>
+        <view class='rest-durs'>
+          <text class='rest-dur' @click='setRestDur(60)'>60s</text>
+          <text class='rest-dur' @click='setRestDur(90)'>90s</text>
+          <text class='rest-dur' @click='setRestDur(120)'>120s</text>
+          <text class='rest-dur' @click='setRestDur(180)'>180s</text>
+        </view>
+        <view class='rest-btns'>
+          <button size='mini' @click='togglePause'>{{ restTimer.paused ? '继续' : '暂停' }}</button>
+          <button size='mini' class='btn-warn' @click='stopRest'>跳过</button>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script setup lang='ts'>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { api, type SessionInfo, type SessionLog, type ExerciseInfo, type PlannedExercise, EXERCISE_CATEGORIES } from '../../api'
 import { getPendingExercises, clearPendingExercises } from '../../api/state'
 
@@ -144,6 +164,7 @@ async function onAddLog(exerciseId: string) {
     f.weight = ''; f.reps = ''
     uni.showToast({ title: '已记录', icon: 'success' })
     await loadSession()
+    startRest(90)
   } catch {}
 }
 
@@ -168,6 +189,44 @@ function onPick(e: ExerciseInfo) {
   }
   showPicker.value = false
 }
+
+const restTimer = reactive({ active: false, remaining: 0, total: 90, paused: false })
+let restInterval: ReturnType<typeof setInterval> | null = null
+const restDisplay = computed(() => {
+  const m = Math.floor(restTimer.remaining / 60)
+  const s = restTimer.remaining % 60
+  return m + ':' + String(s).padStart(2, '0')
+})
+const restBarStyle = computed(() => {
+  const pct = restTimer.total > 0 ? Math.round(((restTimer.total - restTimer.remaining) / restTimer.total) * 100) : 0
+  return { width: pct + '%' }
+})
+function startRest(seconds: number) {
+  stopRest()
+  restTimer.total = seconds
+  restTimer.remaining = seconds
+  restTimer.active = true
+  restTimer.paused = false
+  restInterval = setInterval(() => {
+    if (!restTimer.paused) {
+      restTimer.remaining--
+      if (restTimer.remaining <= 0) {
+        stopRest()
+        uni.vibrateShort({})
+        uni.showToast({ title: '休息结束，继续训练', icon: 'none', duration: 2000 })
+      }
+    }
+  }, 1000)
+}
+function stopRest() {
+  restTimer.active = false
+  restTimer.remaining = 0
+  restTimer.paused = false
+  if (restInterval) { clearInterval(restInterval); restInterval = null }
+}
+function togglePause() { restTimer.paused = !restTimer.paused }
+function setRestDur(s: number) { startRest(s) }
+onUnmounted(() => { stopRest() })
 </script>
 
 <style>
@@ -209,4 +268,14 @@ function onPick(e: ExerciseInfo) {
 .search { border: 1rpx solid #ddd; border-radius: 8rpx; padding: 12rpx; margin-bottom: 12rpx; }
 .pick-list { flex: 1; max-height: 500rpx; }
 .pick-item { display: flex; justify-content: space-between; padding: 20rpx 0; border-bottom: 1rpx solid #f0f0f0; }
+.rest-timer { position: fixed; bottom: 0; left: 0; right: 0; background: #fff; border-top: 1rpx solid #ddd; padding: 16rpx 24rpx; box-shadow: 0 -2rpx 12rpx rgba(0,0,0,0.08); z-index: 99; }
+.rest-bar { height: 6rpx; background: #f0f0f0; border-radius: 3rpx; margin-bottom: 12rpx; overflow: hidden; }
+.rest-fill { height: 100%; background: #007aff; border-radius: 3rpx; }
+.rest-content { display: flex; align-items: center; justify-content: space-between; }
+.rest-info { display: flex; flex-direction: column; align-items: center; min-width: 120rpx; }
+.rest-count { font-size: 40rpx; font-weight: bold; color: #007aff; }
+.rest-status { font-size: 22rpx; color: #999; }
+.rest-durs { display: flex; gap: 8rpx; }
+.rest-dur { font-size: 24rpx; color: #007aff; padding: 6rpx 14rpx; border: 1rpx solid #007aff; border-radius: 8rpx; }
+.rest-btns { display: flex; gap: 8rpx; }
 </style>
