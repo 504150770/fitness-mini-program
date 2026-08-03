@@ -83,6 +83,7 @@ import { api, type HomeData } from '../../api'
 import { getToken, setToken } from '../../api/token'
 import { setPendingExercises } from '../../api/state'
 import { nav } from '../../utils/nav'
+import { onPullDownRefresh } from '@dcloudio/uni-app'
 
 const home = ref<HomeData | null>(null)
 const userInfo = ref('')
@@ -121,6 +122,7 @@ const weekPct = computed(() => {
 function barWidth(pct: number) { return { width: pct + '%' } }
 
 onMounted(() => { if (hasToken.value) { loadHome(); onMe() } })
+onPullDownRefresh(async () => { if (hasToken.value) { await loadHome(); await onMe() } uni.stopPullDownRefresh() })
 
 async function loadHome() { try { home.value = await api.getHome() } catch {} }
 function go(url: string) { nav(url) }

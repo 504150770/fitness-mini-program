@@ -59,6 +59,13 @@
         <view class='nav-item' @click='go(stats)'><text>训练统计</text><text class='nav-arrow'>></text></view>
       </view>
     </view>
+
+    <view class='card about-card'>
+      <view class='about-title'>健身小程序</view>
+      <view class='about-row'><text>版本</text><text class='muted'>1.0.0</text></view>
+      <view class='about-row'><text>技术栈</text><text class='muted'>uni-app + Node.js</text></view>
+      <view class='about-tip'>记录每一次训练，遇见更好的自己</view>
+    </view>
   </view>
 </template>
 
@@ -144,4 +151,8 @@ async function onSave() {
 .nav-list { background: #fff; border-radius: 12rpx; overflow: hidden; }
 .nav-item { display: flex; justify-content: space-between; align-items: center; padding: 24rpx; border-bottom: 1rpx solid #f5f5f5; font-size: 28rpx; color: #333; }
 .nav-arrow { color: #ccc; font-size: 32rpx; }
+.about-card { text-align: center; }
+.about-title { font-size: 32rpx; font-weight: bold; color: #333; margin-bottom: 16rpx; }
+.about-row { display: flex; justify-content: space-between; padding: 8rpx 0; font-size: 26rpx; color: #666; }
+.about-tip { font-size: 24rpx; color: #bbb; margin-top: 16rpx; }
 </style>

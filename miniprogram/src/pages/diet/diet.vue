@@ -85,6 +85,7 @@
 <script setup lang='ts'>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { api, type DietRecord, type DietSummary } from '../../api'
+import { onPullDownRefresh } from '@dcloudio/uni-app'
 
 const mealTypes = [
   { value: 'BREAKFAST', label: '早餐' },
@@ -137,6 +138,7 @@ const recordsByMeal = computed(() => {
 function barWidth(pct: number) { return { width: pct + '%' } }
 
 onMounted(load)
+onPullDownRefresh(async () => { await load(); uni.stopPullDownRefresh() })
 
 async function load() {
   try {

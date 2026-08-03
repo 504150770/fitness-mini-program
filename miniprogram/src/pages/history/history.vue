@@ -19,9 +19,11 @@
 <script setup lang='ts'>
 import { ref, onMounted } from 'vue'
 import { api, type SessionListItem } from '../../api'
+import { onPullDownRefresh } from '@dcloudio/uni-app'
 
 const sessions = ref<SessionListItem[]>([])
 onMounted(load)
+onPullDownRefresh(async () => { await load(); uni.stopPullDownRefresh() })
 
 async function load() { try { sessions.value = await api.getSessions() } catch {} }
 function goDetail(id: string) { uni.navigateTo({ url: '/pages/session-detail/session-detail?id=' + id }) }

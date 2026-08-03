@@ -2,6 +2,8 @@
   <view class='page'>
     <view class='title'>训练统计</view>
 
+    <view v-if='!stats' class='empty-state'>暂无统计数据，完成训练后即可查看</view>
+
     <view v-if='stats' class='stats-grid'>
       <view class='stat-card'><text class='stat-val'>{{ stats.totalSessions }}</text><text class='stat-label'>总训练次数</text></view>
       <view class='stat-card'><text class='stat-val'>{{ stats.trainingDaysThisMonth }}</text><text class='stat-label'>本月训练天</text></view>
@@ -77,4 +79,5 @@ function calHeight(c: number) {
 .vol-bar { background: linear-gradient(180deg, #007aff, #4da6ff); }
 .cal-bar { background: linear-gradient(180deg, #ff9500, #ffb84d); }
 .chart-date { font-size: 20rpx; color: #999; margin-top: 4rpx; }
+.empty-state { text-align: center; color: #999; padding: 60rpx 0; font-size: 28rpx; }
 </style>
