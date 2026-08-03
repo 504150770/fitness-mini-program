@@ -22,6 +22,7 @@ export interface PersonalRecordInfo { id: string; exerciseId: string; exerciseNa
 export interface DietRecord { id: string; mealType: string; foodName: string; caloriesKcal: number; proteinG: number | null; carbsG: number | null; fatG: number | null; recordedAt: string; note: string | null }
 export interface DietRecordInput { mealType: string; foodName: string; caloriesKcal: number; proteinG?: number; carbsG?: number; fatG?: number; note?: string }
 export interface DietSummary { records: DietRecord[]; caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }
+export interface FrequentFood { name: string; caloriesKcal: number; proteinG: number | null; carbsG: number | null; fatG: number | null; count: number }
 export interface CheckInStatus { hasTraining: boolean; hasDiet: boolean }
 export interface HomeGoals { dailyCalorieGoal: number | null; dailyProteinGoal: number | null; weeklyTrainGoal: number | null; targetWeightKg: number | null; weekSessionsDone: number }
 export interface HomeData { todayTraining: { id: string; name: string; status: string; totalVolumeKg: number } | null; todayDiet: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }; currentWeight: number | null; streak: number; checkIn: CheckInStatus; goals: HomeGoals }
@@ -82,6 +83,7 @@ export const api = {
   updateDietRecord: (id: string, data: Partial<DietRecordInput>) => request<DietRecord>({ url: '/diet/' + id, method: 'PUT', data }),
   deleteDietRecord: (id: string) => request({ url: '/diet/' + id, method: 'DELETE' }),
   getDietSummary: (date?: string) => request<DietSummary>({ url: '/diet/summary', method: 'GET', data: date ? { date } : undefined }),
+  getFrequentFoods: () => request<FrequentFood[]>({ url: '/diet/frequent' }),
   checkin: (type: string) => request<CheckInStatus>({ url: '/checkins', method: 'POST', data: { type } }),
   getCheckinToday: () => request<CheckInStatus>({ url: '/checkins/today' }),
   getStreak: () => request<{ streak: number }>({ url: '/checkins/streak' }),

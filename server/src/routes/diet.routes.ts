@@ -3,6 +3,7 @@ import { dietController } from '../controllers/diet.controller';
 import { authRequired } from '../middlewares/auth.middleware';
 export const dietRouter = Router();
 dietRouter.get('/summary', authRequired, dietController.summary);
+dietRouter.get('/frequent', authRequired, dietController.frequent);
 dietRouter.get('/', authRequired, dietController.list);
 dietRouter.post('/', authRequired, dietController.create);
 dietRouter.put('/:id', authRequired, dietController.update);

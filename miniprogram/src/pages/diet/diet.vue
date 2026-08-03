@@ -66,6 +66,12 @@
             <text v-for='f in commonFoods' :key='f.name' class='quick-tag' @click='onPickFood(f)'>{{ f.name }}</text>
           </view>
         </view>
+        <view v-if='frequentFoods.length > 0' class='quick-foods'>
+          <text class='quick-title'>最近记录（点击填充）</text>
+          <view class='quick-list'>
+            <text v-for='f in frequentFoods' :key='f.name' class='quick-tag' @click='onPickFrequent(f)'>{{ f.name }}</text>
+          </view>
+        </view>
         <view class='row'><text class='label'>食物</text><input class='input' v-model='form.foodName' placeholder='食物名称' /></view>
         <view class='row'><text class='label'>热量</text><input class='input' type='number' v-model='form.caloriesKcal' placeholder='kcal' /></view>
         <view class='row3'>
@@ -84,7 +90,7 @@
 
 <script setup lang='ts'>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { api, type DietRecord, type DietSummary } from '../../api'
+import { api, type DietRecord, type DietSummary, type FrequentFood } from '../../api'
 import { onPullDownRefresh } from '@dcloudio/uni-app'
 
 const mealTypes = [
@@ -116,6 +122,7 @@ const summary = ref<DietSummary>({ records: [], caloriesKcal: 0, proteinG: 0, ca
 const calorieGoal = ref<number | null>(null)
 const caloriePct = computed(() => { if (!calorieGoal.value) return 0; return Math.min(100, Math.round((summary.value.caloriesKcal / calorieGoal.value) * 100)) })
 const showForm = ref(false)
+const frequentFoods = ref<FrequentFood[]>([])
 const form = reactive({ mealType: 'BREAKFAST', foodName: '', caloriesKcal: '', proteinG: '', carbsG: '', fatG: '' })
 
 const macroBar = computed(() => {
@@ -151,7 +158,7 @@ async function load() {
 
 function onDate(e: any) { date.value = e.detail.value; load() }
 function mealLabel(v: string) { return mealTypes.find(m => m.value === v)?.label || v }
-function onAdd(mealType: string) { form.mealType = mealType; form.foodName = ''; form.caloriesKcal = ''; form.proteinG = ''; form.carbsG = ''; form.fatG = ''; showForm.value = true }
+function onAdd(mealType: string) { form.mealType = mealType; form.foodName = ''; form.caloriesKcal = ''; form.proteinG = ''; form.carbsG = ''; form.fatG = ''; showForm.value = true; loadFrequentFoods() }
 
 function onPickFood(f: CommonFood) {
   form.foodName = f.name
@@ -178,6 +185,17 @@ async function onSave() {
 
 async function onDelete(r: DietRecord) {
   uni.showModal({ title: '确认', content: '删除 ' + r.foodName + '?', success: async (res) => { if (!res.confirm) return; try { await api.deleteDietRecord(r.id); await load() } catch {} } })
+}
+async function loadFrequentFoods() {
+  try { frequentFoods.value = await api.getFrequentFoods() } catch {}
+}
+
+function onPickFrequent(f: FrequentFood) {
+  form.foodName = f.name
+  form.caloriesKcal = String(f.caloriesKcal)
+  form.proteinG = f.proteinG != null ? String(f.proteinG) : ''
+  form.carbsG = f.carbsG != null ? String(f.carbsG) : ''
+  form.fatG = f.fatG != null ? String(f.fatG) : ''
 }
 </script>
 

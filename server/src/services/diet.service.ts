@@ -54,6 +54,24 @@ export const dietService = {
     return prisma.dietRecord.delete({ where: { id } });
   },
 
+  async getFrequentFoods(userId: string) {
+    const records = await prisma.dietRecord.findMany({
+      where: { userId },
+      orderBy: { recordedAt: 'desc' },
+      take: 200,
+      select: { foodName: true, caloriesKcal: true, proteinG: true, carbsG: true, fatG: true },
+    });
+    const foodMap = new Map<string, { name: string; caloriesKcal: number; proteinG: number | null; carbsG: number | null; fatG: number | null; count: number }>();
+    for (const r of records) {
+      const existing = foodMap.get(r.foodName);
+      if (existing) { existing.count++; }
+      else {
+        foodMap.set(r.foodName, { name: r.foodName, caloriesKcal: r.caloriesKcal, proteinG: r.proteinG, carbsG: r.carbsG, fatG: r.fatG, count: 1 });
+      }
+    }
+    return Array.from(foodMap.values()).sort((a, b) => b.count - a.count).slice(0, 12);
+  },
+
   async summary(userId: string, date?: string) {
     const records = await this.list(userId, date);
     const totals = records.reduce((acc, r) => ({

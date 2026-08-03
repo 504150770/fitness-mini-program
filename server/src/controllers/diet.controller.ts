@@ -20,6 +20,13 @@ export const dietController = {
   async remove(req: AuthRequest, res: Response, next: NextFunction) {
     try { await dietService.remove(req.userId as string, req.params.id); res.json(success(null, '已删除')); } catch (e) { next(e); }
   },
+  async frequent(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const foods = await dietService.getFrequentFoods(req.userId as string);
+      res.json(success(foods));
+    } catch (e) { next(e); }
+  },
+
   async summary(req: AuthRequest, res: Response, next: NextFunction) {
     try { const { date } = req.query; const s = await dietService.summary(req.userId as string, date as string | undefined); res.json(success({ records: s.records.map(toDto), ...s.totals, recordCount: s.records.length })); } catch (e) { next(e); }
   },
