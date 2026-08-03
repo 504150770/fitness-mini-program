@@ -77,6 +77,12 @@ export const planController = {
     } catch (e) { next(e); }
   },
 
+  async clone(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const plan = await planService.clone(req.userId as string, req.params.id);
+      res.json(success(toPlanDto(plan), '已复制'));
+    } catch (e) { next(e); }
+  },
   async reorder(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const plan = await planService.reorder(req.userId as string, req.params.id, (req.body || {}).items || []);

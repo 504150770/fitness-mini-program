@@ -116,6 +116,33 @@ export const planService = {
     return prisma.workoutPlanExercise.delete({ where: { id: itemId } });
   },
 
+  async clone(userId: string, planId: string) {
+    const plan = await assertPlanOwned(userId, planId);
+    const exercises = await prisma.workoutPlanExercise.findMany({
+      where: { planId },
+      orderBy: { sortOrder: 'asc' },
+    });
+    const count = await prisma.workoutPlan.count({ where: { userId } });
+    return prisma.workoutPlan.create({
+      data: {
+        userId,
+        name: plan.name + ' (副本)',
+        note: plan.note,
+        sortOrder: count,
+        exercises: {
+          create: exercises.map((e) => ({
+            exerciseId: e.exerciseId,
+            sets: e.sets,
+            reps: e.reps,
+            weightKg: e.weightKg,
+            note: e.note,
+            sortOrder: e.sortOrder,
+          })),
+        },
+      },
+      include: { exercises: { include: { exercise: true }, orderBy: { sortOrder: 'asc' } } },
+    });
+  },
   async reorder(userId: string, planId: string, items: { id: string; sortOrder: number }[]) {
     await assertPlanOwned(userId, planId);
     await prisma.$transaction(

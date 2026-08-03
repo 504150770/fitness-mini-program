@@ -10,4 +10,5 @@ planRouter.delete('/:id', authRequired, planController.remove);
 planRouter.post('/:id/exercises', authRequired, planController.addExercise);
 planRouter.put('/:id/exercises/:itemId', authRequired, planController.updateExercise);
 planRouter.delete('/:id/exercises/:itemId', authRequired, planController.removeExercise);
+planRouter.post('/:id/clone', authRequired, planController.clone);
 planRouter.put('/:id/reorder', authRequired, planController.reorder);

@@ -40,6 +40,7 @@
       <text v-if='p.note' class='muted'>{{ p.note }}</text>
       <view class='item-actions' @click.stop=''>
         <button size='mini' @click='onEdit(p)'>编辑</button>
+        <button size='mini' class='btn-clone' @click='onClone(p)'>复制</button>
         <button size='mini' class='btn-warn' @click='onDelete(p)'>删除</button>
       </view>
     </view>
@@ -140,6 +141,13 @@ async function onApplyTpl(tpl: PlanTemplate) {
   } catch { uni.hideLoading() }
 }
 
+async function onClone(p: PlanInfo) {
+  try {
+    await api.clonePlan(p.id)
+    uni.showToast({ title: '已复制', icon: 'success' })
+    await load()
+  } catch {}
+}
 async function onDelete(p: PlanInfo) {
   uni.showModal({ title: '确认删除', content: '删除 ' + p.name + ' ?', success: async (r) => { if (!r.confirm) return; try { await api.deletePlan(p.id); uni.showToast({ title: '已删除', icon: 'success' }); await load() } catch {} } })
 }
@@ -173,4 +181,5 @@ async function onDelete(p: PlanInfo) {
 .item-actions { display: flex; gap: 12rpx; margin-top: 16rpx; }
 .item-actions button { flex: 1; }
 .btn-warn { background: #ff3b30; color: #fff; }
+.btn-clone { background: #34c759; color: #fff; }
 </style>

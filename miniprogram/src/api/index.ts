@@ -60,6 +60,7 @@ export const api = {
   createPlan: (data: { name: string; note?: string }) => request<PlanInfo>({ url: '/plans', method: 'POST', data }),
   updatePlan: (id: string, data: { name?: string; note?: string }) => request<PlanInfo>({ url: '/plans/' + id, method: 'PUT', data }),
   deletePlan: (id: string) => request({ url: '/plans/' + id, method: 'DELETE' }),
+  clonePlan: (id: string) => request<PlanInfo>({ url: '/plans/' + id + '/clone', method: 'POST' }),
   addPlanExercise: (planId: string, data: PlanExerciseInput) => request<PlanExercise>({ url: '/plans/' + planId + '/exercises', method: 'POST', data }),
   updatePlanExercise: (planId: string, itemId: string, data: Partial<PlanExerciseInput>) => request<PlanExercise>({ url: '/plans/' + planId + '/exercises/' + itemId, method: 'PUT', data }),
   removePlanExercise: (planId: string, itemId: string) => request({ url: '/plans/' + planId + '/exercises/' + itemId, method: 'DELETE' }),
