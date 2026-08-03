@@ -15,6 +15,15 @@
         <view class='total'><text class='t-val'>{{ summary.carbsG }}</text><text class='t-label'>碳水g</text></view>
         <view class='total'><text class='t-val'>{{ summary.fatG }}</text><text class='t-label'>脂肪g</text></view>
       </view>
+      <view v-if='calorieGoal' class='cal-goal-section'>
+        <view class='cal-goal-row'>
+          <text class='cal-goal-text'>{{ summary.caloriesKcal }} / {{ calorieGoal }} kcal</text>
+          <text class='cal-goal-pct'>{{ caloriePct }}%</text>
+        </view>
+        <view class='cal-goal-bar'>
+          <view class='cal-goal-fill' :style='barWidth(caloriePct)'></view>
+        </view>
+      </view>
       <view v-if='macroBar.total > 0' class='macro-section'>
         <view class='macro-bar'>
           <view class='macro-seg seg-protein' :style='barWidth(macroBar.proteinPct)'></view>
@@ -103,6 +112,8 @@ const commonFoods: CommonFood[] = [
 const date = ref(new Date().toISOString().slice(0, 10))
 const records = ref<DietRecord[]>([])
 const summary = ref<DietSummary>({ records: [], caloriesKcal: 0, proteinG: 0, carbsG: 0, fatG: 0, recordCount: 0 })
+const calorieGoal = ref<number | null>(null)
+const caloriePct = computed(() => { if (!calorieGoal.value) return 0; return Math.min(100, Math.round((summary.value.caloriesKcal / calorieGoal.value) * 100)) })
 const showForm = ref(false)
 const form = reactive({ mealType: 'BREAKFAST', foodName: '', caloriesKcal: '', proteinG: '', carbsG: '', fatG: '' })
 
@@ -132,6 +143,7 @@ async function load() {
     const s = await api.getDietSummary(date.value)
     summary.value = s
     records.value = s.records
+    if (calorieGoal.value === null) { try { const p = await api.getProfile(); calorieGoal.value = p?.dailyCalorieGoal ?? null } catch {} }
   } catch {}
 }
 
@@ -216,4 +228,10 @@ async function onDelete(r: DietRecord) {
 .form-btns { display: flex; gap: 16rpx; }
 .form-btns button { flex: 1; }
 .btn-primary { background: #007aff; color: #fff; }
+.cal-goal-section { margin-top: 16rpx; }
+.cal-goal-row { display: flex; justify-content: space-between; align-items: center; }
+.cal-goal-text { font-size: 26rpx; color: #333; }
+.cal-goal-pct { font-size: 24rpx; color: #007aff; font-weight: bold; }
+.cal-goal-bar { height: 16rpx; border-radius: 8rpx; background: #f0f0f0; overflow: hidden; margin-top: 8rpx; }
+.cal-goal-fill { height: 100%; background: #007aff; border-radius: 8rpx; }
 </style>

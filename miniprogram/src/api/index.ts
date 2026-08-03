@@ -3,8 +3,8 @@ import { request } from './request'
 export interface HealthInfo { status: string; env: string; time: string }
 export interface AuthUser { id: string; openid: string; nickname: string | null }
 export interface LoginResult { user: AuthUser; token: string }
-export interface UserProfileInfo { userId: string; gender: string | null; birthDate: string | null; age: number | null; heightCm: number | null; goal: string | null }
-export interface ProfileInput { gender?: string | null; birthDate?: string | null; heightCm?: number | null; goal?: string | null }
+export interface UserProfileInfo { userId: string; gender: string | null; birthDate: string | null; age: number | null; heightCm: number | null; goal: string | null; dailyCalorieGoal: number | null; dailyProteinGoal: number | null; weeklyTrainGoal: number | null; targetWeightKg: number | null }
+export interface ProfileInput { gender?: string | null; birthDate?: string | null; heightCm?: number | null; goal?: string | null; dailyCalorieGoal?: number | null; dailyProteinGoal?: number | null; weeklyTrainGoal?: number | null; targetWeightKg?: number | null }
 export interface BodyRecord { id: string; userId: string; recordedAt: string; weightKg: number; bodyFatPct: number | null; photoUrl: string | null; note: string | null }
 export interface BodyRecordInput { weightKg: number; bodyFatPct?: number | null; note?: string | null; recordedAt?: string | null }
 export interface BodyTrendPoint { date: string; weightKg: number }
@@ -23,7 +23,8 @@ export interface DietRecord { id: string; mealType: string; foodName: string; ca
 export interface DietRecordInput { mealType: string; foodName: string; caloriesKcal: number; proteinG?: number; carbsG?: number; fatG?: number; note?: string }
 export interface DietSummary { records: DietRecord[]; caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }
 export interface CheckInStatus { hasTraining: boolean; hasDiet: boolean }
-export interface HomeData { todayTraining: { id: string; name: string; status: string; totalVolumeKg: number } | null; todayDiet: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }; currentWeight: number | null; streak: number; checkIn: CheckInStatus }
+export interface HomeGoals { dailyCalorieGoal: number | null; dailyProteinGoal: number | null; weeklyTrainGoal: number | null; targetWeightKg: number | null; weekSessionsDone: number }
+export interface HomeData { todayTraining: { id: string; name: string; status: string; totalVolumeKg: number } | null; todayDiet: { caloriesKcal: number; proteinG: number; carbsG: number; fatG: number; recordCount: number }; currentWeight: number | null; streak: number; checkIn: CheckInStatus; goals: HomeGoals }
 export interface StatsData { totalSessions: number; totalVolumeKg: number; totalSets: number; prCount: number; trainingDaysThisMonth: number; weeklyVolume: { date: string; volume: number }[]; weeklyCalories: { date: string; calories: number }[] }
 export interface ExerciseDetails { exercise: ExerciseInfo; pr: { maxWeightKg: number; maxWeightReps: number; achievedAt: string } | null; recentLogs: { id: string; weightKg: number; reps: number; volumeKg: number; isPR: boolean; setOrder: number; sessionName: string; sessionDate: string }[] }
 

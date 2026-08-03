@@ -27,14 +27,18 @@ model User {
 }
 
 model UserProfile {
-  userId    String    @id
-  user      User      @relation(fields: [userId], references: [id])
-  gender    String?
-  birthDate DateTime?
-  heightCm  Float?
-  goal      String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  userId           String    @id
+  user             User      @relation(fields: [userId], references: [id])
+  gender           String?
+  birthDate        DateTime?
+  heightCm         Float?
+  goal             String?
+  dailyCalorieGoal Int?
+  dailyProteinGoal Float?
+  weeklyTrainGoal  Int?
+  targetWeightKg   Float?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model BodyRecord {

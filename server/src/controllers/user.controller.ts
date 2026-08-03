@@ -18,6 +18,10 @@ function toProfileDto(p: {
   birthDate: Date | null;
   heightCm: number | null;
   goal: string | null;
+  dailyCalorieGoal: number | null;
+  dailyProteinGoal: number | null;
+  weeklyTrainGoal: number | null;
+  targetWeightKg: number | null;
 }) {
   return {
     userId: p.userId,
@@ -26,6 +30,10 @@ function toProfileDto(p: {
     age: ageFromBirth(p.birthDate),
     heightCm: p.heightCm,
     goal: p.goal,
+    dailyCalorieGoal: p.dailyCalorieGoal,
+    dailyProteinGoal: p.dailyProteinGoal,
+    weeklyTrainGoal: p.weeklyTrainGoal,
+    targetWeightKg: p.targetWeightKg,
   };
 }
 

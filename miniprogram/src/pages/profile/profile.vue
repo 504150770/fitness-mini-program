@@ -2,6 +2,7 @@
   <view class='page'>
     <view class='title'>用户资料</view>
     <view class='card'>
+      <view class='section-title'>基本信息</view>
       <view class='row'>
         <text class='label'>性别</text>
         <picker mode='selector' :range='genderLabels' :value='genderIndex' @change='onGender' class='picker'>
@@ -23,8 +24,29 @@
         <input class='input' v-model='form.goal' placeholder='如 增肌减脂' />
       </view>
       <view v-if='profile' class='muted'>当前年龄: {{ profile.age == null ? '-' : profile.age }} 岁</view>
-      <button class='btn-primary' @click='onSave'>保存资料</button>
     </view>
+
+    <view class='card'>
+      <view class='section-title'>每日目标</view>
+      <view class='row'>
+        <text class='label'>热量目标</text>
+        <input class='input' type='digit' v-model='form.dailyCalorieGoal' placeholder='kcal 如 2000' />
+      </view>
+      <view class='row'>
+        <text class='label'>蛋白质目标</text>
+        <input class='input' type='digit' v-model='form.dailyProteinGoal' placeholder='g 如 150' />
+      </view>
+      <view class='row'>
+        <text class='label'>每周训练</text>
+        <input class='input' type='digit' v-model='form.weeklyTrainGoal' placeholder='次 如 4' />
+      </view>
+      <view class='row'>
+        <text class='label'>目标体重</text>
+        <input class='input' type='digit' v-model='form.targetWeightKg' placeholder='kg 如 70' />
+      </view>
+    </view>
+
+    <button class='btn-primary' @click='onSave'>保存资料</button>
   </view>
 </template>
 
@@ -35,7 +57,7 @@ import { api, type UserProfileInfo } from '../../api'
 const genderLabels = ['男', '女', '其他']
 const genderValues = ['MALE', 'FEMALE', 'OTHER']
 const profile = ref<UserProfileInfo | null>(null)
-const form = reactive({ birthDate: '', heightCm: '', goal: '' })
+const form = reactive({ birthDate: '', heightCm: '', goal: '', dailyCalorieGoal: '', dailyProteinGoal: '', weeklyTrainGoal: '', targetWeightKg: '' })
 const genderIndex = ref(0)
 const hasGender = ref(false)
 
@@ -49,6 +71,10 @@ async function load() {
       form.birthDate = p.birthDate || ''
       form.heightCm = p.heightCm == null ? '' : String(p.heightCm)
       form.goal = p.goal || ''
+      form.dailyCalorieGoal = p.dailyCalorieGoal == null ? '' : String(p.dailyCalorieGoal)
+      form.dailyProteinGoal = p.dailyProteinGoal == null ? '' : String(p.dailyProteinGoal)
+      form.weeklyTrainGoal = p.weeklyTrainGoal == null ? '' : String(p.weeklyTrainGoal)
+      form.targetWeightKg = p.targetWeightKg == null ? '' : String(p.targetWeightKg)
       const gi = p.gender ? genderValues.indexOf(p.gender) : -1
       genderIndex.value = gi >= 0 ? gi : 0
       hasGender.value = gi >= 0
@@ -59,12 +85,22 @@ async function load() {
 function onGender(e: any) { genderIndex.value = Number(e.detail.value); hasGender.value = true }
 function onBirth(e: any) { form.birthDate = e.detail.value }
 
+function toNum(v: string): number | null {
+  if (v === '') return null
+  const n = Number(v)
+  return isNaN(n) ? null : n
+}
+
 async function onSave() {
   const data = {
     gender: hasGender.value ? genderValues[genderIndex.value] : null,
     birthDate: form.birthDate || null,
-    heightCm: form.heightCm === '' ? null : Number(form.heightCm),
+    heightCm: toNum(form.heightCm),
     goal: form.goal || null,
+    dailyCalorieGoal: toNum(form.dailyCalorieGoal),
+    dailyProteinGoal: toNum(form.dailyProteinGoal),
+    weeklyTrainGoal: toNum(form.weeklyTrainGoal),
+    targetWeightKg: toNum(form.targetWeightKg),
   }
   try {
     const p = await api.upsertProfile(data)
@@ -78,8 +114,9 @@ async function onSave() {
 .page { padding: 24rpx; }
 .title { font-size: 36rpx; font-weight: bold; margin-bottom: 24rpx; text-align: center; }
 .card { background: #fff; border-radius: 16rpx; padding: 24rpx; margin-bottom: 24rpx; }
+.section-title { font-size: 30rpx; font-weight: bold; color: #333; margin-bottom: 20rpx; }
 .row { display: flex; align-items: center; margin-bottom: 24rpx; }
-.label { width: 160rpx; color: #666; }
+.label { width: 180rpx; color: #666; }
 .picker { flex: 1; }
 .input { flex: 1; border: 1rpx solid #ddd; border-radius: 8rpx; padding: 12rpx; }
 .muted { color: #999; font-size: 26rpx; margin-bottom: 16rpx; }

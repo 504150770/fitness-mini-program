@@ -9,6 +9,22 @@ function parseDate(s?: string | null): Date | undefined | null {
   return isNaN(d.getTime()) ? undefined : d;
 }
 
+function optInt(v: unknown, min: number, max: number): number | null | undefined {
+  if (v === null) return null;
+  if (v === undefined) return undefined;
+  const n = Number(v);
+  if (!Number.isInteger(n) || n < min || n > max) return undefined;
+  return n;
+}
+
+function optFloat(v: unknown, min: number, max: number): number | null | undefined {
+  if (v === null) return null;
+  if (v === undefined) return undefined;
+  const n = Number(v);
+  if (isNaN(n) || n < min || n > max) return undefined;
+  return n;
+}
+
 export const userService = {
   async getOrCreateByOpenid(
     openid: string,
@@ -45,6 +61,10 @@ export const userService = {
       birthDate?: string | null;
       heightCm?: number | null;
       goal?: string | null;
+      dailyCalorieGoal?: number | null;
+      dailyProteinGoal?: number | null;
+      weeklyTrainGoal?: number | null;
+      targetWeightKg?: number | null;
     },
   ) {
     const gender =
@@ -57,10 +77,14 @@ export const userService = {
         ? input.heightCm
         : undefined;
     const goal = input.goal === null ? null : typeof input.goal === 'string' ? input.goal.slice(0, 100) : undefined;
+    const dailyCalorieGoal = optInt(input.dailyCalorieGoal, 0, 10000);
+    const dailyProteinGoal = optFloat(input.dailyProteinGoal, 0, 1000);
+    const weeklyTrainGoal = optInt(input.weeklyTrainGoal, 0, 30);
+    const targetWeightKg = optFloat(input.targetWeightKg, 0, 500);
     return prisma.userProfile.upsert({
       where: { userId },
-      create: { userId, gender, birthDate, heightCm, goal },
-      update: { gender, birthDate, heightCm, goal },
+      create: { userId, gender, birthDate, heightCm, goal, dailyCalorieGoal, dailyProteinGoal, weeklyTrainGoal, targetWeightKg },
+      update: { gender, birthDate, heightCm, goal, dailyCalorieGoal, dailyProteinGoal, weeklyTrainGoal, targetWeightKg },
     });
   },
 };
