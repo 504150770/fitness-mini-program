@@ -71,6 +71,7 @@
     <view class='card'>
       <view class='row'>当前用户: {{ userInfo || '未登录' }}</view>
       <input class='input' v-model='openid' placeholder='测试 openid' />
+      <button class='btn-wx' @click='onWxLogin'>微信登录</button>
       <button class='btn-primary' @click='onDevLogin'>开发登录</button>
       <button @click='onHealth' :disabled='!hasToken'>健康检查</button>
     </view>
@@ -140,6 +141,22 @@ async function onDevLogin() {
 }
 async function onMe() { try { const d = await api.me(); userInfo.value = d.openid } catch {} }
 async function onHealth() { try { const d = await api.health(); uni.showToast({ title: d.status + ' / ' + d.env, icon: 'none' }) } catch {} }
+async function onWxLogin() {
+  uni.login({
+    provider: 'weixin',
+    success: async (res) => {
+      if (!res.code) { uni.showToast({ title: '获取登录凭证失败', icon: 'none' }); return }
+      try {
+        const d = await api.wxLogin(res.code)
+        setToken(d.token)
+        userInfo.value = d.user.openid
+        uni.showToast({ title: '登录成功', icon: 'success' })
+        await loadHome()
+      } catch {}
+    },
+    fail: () => { uni.showToast({ title: '微信登录取消', icon: 'none' }) },
+  })
+}
 </script>
 
 <style>
@@ -163,4 +180,5 @@ button { margin-top: 12rpx; }
 .seg-protein { background: #34c759; }
 .seg-train { background: #ff9500; }
 .goal-text { font-size: 22rpx; color: #999; }
+.btn-wx { background: #07c160; color: #fff; }
 </style>
