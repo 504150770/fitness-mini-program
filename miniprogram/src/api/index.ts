@@ -87,4 +87,5 @@ export const api = {
   getHome: () => request<HomeData>({ url: '/home' }),
   getStats: () => request<StatsData>({ url: '/stats' }),
   getExerciseDetails: (id: string) => request<ExerciseDetails>({ url: '/exercises/' + id + '/details' }),
+  exportCsv: (type: string) => request<string>({ url: '/export/csv', method: 'GET', data: { type } }),
 }

@@ -11,6 +11,7 @@ import { dietRouter } from './routes/diet.routes';
 import { checkinRouter } from './routes/checkin.routes';
 import { homeRouter } from './routes/home.routes';
 import { statsRouter } from './routes/stats.routes';
+import { exportRouter } from './routes/export.routes';
 import { errorHandler, notFound } from './middlewares/error.middleware';
 
 const app = express();
@@ -37,6 +38,7 @@ app.use('/api/v1/diet', dietRouter);
 app.use('/api/v1/checkins', checkinRouter);
 app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/stats', statsRouter);
+app.use('/api/v1/export', exportRouter);
 if (config.isDev) {
   app.use('/api/v1/auth', devAuthRouter);
 }

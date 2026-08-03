@@ -34,6 +34,16 @@
       </view>
     </view>
   </view>
+
+    <view class='card'>
+      <view class='section-title'>数据导出</view>
+      <view class='export-btns'>
+        <button size='mini' @click='onExportTraining'>训练数据</button>
+        <button size='mini' @click='onExportDiet'>饮食数据</button>
+        <button size='mini' @click='onExportBody'>身体数据</button>
+      </view>
+      <text class='export-tip'>导出CSV已复制到剪贴板，可粘贴到Excel或备忘录</text>
+    </view>
 </template>
 
 <script setup lang='ts'>
@@ -61,6 +71,16 @@ function volHeight(v: number) {
 function calHeight(c: number) {
   return { height: Math.max(8, (c / maxCal.value) * 80) + '%' }
 }
+async function onExport(type: string) {
+  uni.showLoading({ title: '导出中...' })
+  try {
+    const csv = await api.exportCsv(type)
+    uni.setClipboardData({ data: csv, success: () => { uni.showToast({ title: '已复制到剪贴板', icon: 'success' }) } })
+  } catch {} finally { uni.hideLoading() }
+}
+function onExportTraining() { onExport('training') }
+function onExportDiet() { onExport('diet') }
+function onExportBody() { onExport('body') }
 </script>
 
 <style>
@@ -80,4 +100,7 @@ function calHeight(c: number) {
 .cal-bar { background: linear-gradient(180deg, #ff9500, #ffb84d); }
 .chart-date { font-size: 20rpx; color: #999; margin-top: 4rpx; }
 .empty-state { text-align: center; color: #999; padding: 60rpx 0; font-size: 28rpx; }
+.export-btns { display: flex; gap: 12rpx; flex-wrap: wrap; }
+.export-btns button { flex: 1; min-width: 180rpx; }
+.export-tip { display: block; font-size: 22rpx; color: #bbb; margin-top: 12rpx; }
 </style>
