@@ -8,7 +8,7 @@ export interface ProfileInput { gender?: string | null; birthDate?: string | nul
 export interface BodyRecord { id: string; userId: string; recordedAt: string; weightKg: number; bodyFatPct: number | null; photoUrl: string | null; note: string | null }
 export interface BodyRecordInput { weightKg: number; bodyFatPct?: number | null; note?: string | null; recordedAt?: string | null }
 export interface BodyTrendPoint { date: string; weightKg: number }
-export interface ExerciseInfo { id: string; name: string; category: string; muscleGroup: string | null; isSystem: boolean; creatorId: string | null }
+export interface ExerciseInfo { id: string; name: string; category: string; muscleGroup: string | null; isSystem: boolean; creatorId: string | null; isFavorite: boolean }
 export interface ExerciseInput { name: string; category: string; muscleGroup?: string }
 export interface PlanExercise { id: string; exerciseId: string; exerciseName: string; category: string; sets: number; reps: string; weightKg: number | null; sortOrder: number; note: string | null }
 export interface PlanInfo { id: string; name: string; note: string | null; sortOrder: number; exercises: PlanExercise[] }
@@ -51,10 +51,11 @@ export const api = {
   getBodyLatest: () => request<BodyRecord | null>({ url: '/body/latest' }),
   getBodyTrend: (limit?: number) => request<BodyTrendPoint[]>({ url: '/body/trend', method: 'GET', data: limit ? { limit } : undefined }),
 
-  getExercises: (params?: { category?: string; search?: string }) => request<ExerciseInfo[]>({ url: '/exercises', method: 'GET', data: params }),
+  getExercises: (params?: { category?: string; search?: string; favorites?: boolean }) => request<ExerciseInfo[]>({ url: '/exercises', method: 'GET', data: params }),
   createExercise: (data: ExerciseInput) => request<ExerciseInfo>({ url: '/exercises', method: 'POST', data }),
   updateExercise: (id: string, data: Partial<ExerciseInput>) => request<ExerciseInfo>({ url: '/exercises/' + id, method: 'PUT', data }),
   deleteExercise: (id: string) => request({ url: '/exercises/' + id, method: 'DELETE' }),
+  toggleFavorite: (id: string) => request<{ isFavorite: boolean }>({ url: '/exercises/' + id + '/favorite', method: 'POST' }),
 
   getPlans: () => request<PlanInfo[]>({ url: '/plans' }),
   createPlan: (data: { name: string; note?: string }) => request<PlanInfo>({ url: '/plans', method: 'POST', data }),

@@ -3,7 +3,7 @@ import type { AuthRequest } from '../middlewares/auth.middleware';
 import { exerciseService } from '../services/exercise.service';
 import { success } from '../utils/response';
 
-function toDto(e: { id: string; name: string; category: string; muscleGroup: string | null; isSystem: boolean; creatorId: string | null }) {
+function toDto(e: { id: string; name: string; category: string; muscleGroup: string | null; isSystem: boolean; creatorId: string | null; favoritedBy?: { id: string }[] }) {
   return {
     id: e.id,
     name: e.name,
@@ -11,16 +11,18 @@ function toDto(e: { id: string; name: string; category: string; muscleGroup: str
     muscleGroup: e.muscleGroup,
     isSystem: e.isSystem,
     creatorId: e.creatorId,
+    isFavorite: (e.favoritedBy?.length ?? 0) > 0,
   };
 }
 
 export const exerciseController = {
   async list(req: AuthRequest, res: Response, next: NextFunction) {
     try {
-      const { category, search } = req.query;
+      const { category, search, favorites } = req.query;
       const items = await exerciseService.list(req.userId as string, {
         category: category as string | undefined,
         search: search as string | undefined,
+        favoritesOnly: favorites === '1' || favorites === 'true',
       });
       res.json(success(items.map(toDto)));
     } catch (e) { next(e); }
@@ -47,6 +49,12 @@ export const exerciseController = {
     } catch (e) { next(e); }
   },
 
+  async toggleFavorite(req: AuthRequest, res: Response, next: NextFunction) {
+    try {
+      const result = await exerciseService.toggleFavorite(req.userId as string, req.params.id);
+      res.json(success(result, result.isFavorite ? '已收藏' : '已取消收藏'));
+    } catch (e) { next(e); }
+  },
   async remove(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       await exerciseService.remove(req.userId as string, req.params.id);

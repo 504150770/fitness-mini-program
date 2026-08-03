@@ -24,6 +24,7 @@ model User {
   dietRecords     DietRecord[]
   checkIns        CheckIn[]
   personalRecords PersonalRecord[]
+  favorites       Favorite[]
 }
 
 model UserProfile {
@@ -66,10 +67,23 @@ model Exercise {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  planItems WorkoutPlanExercise[]
+  planItems   WorkoutPlanExercise[]
+  favoritedBy Favorite[]
 
   @@index([category])
   @@index([creatorId])
+}
+
+model Favorite {
+  id         String   @id @default(cuid())
+  userId     String
+  exerciseId String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, exerciseId])
+  @@index([userId])
 }
 
 model WorkoutPlan {

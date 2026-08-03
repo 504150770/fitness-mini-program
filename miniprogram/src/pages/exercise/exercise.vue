@@ -10,6 +10,10 @@
       <view v-for='c in cats' :key='c.value' class='tab' :class='{ active: category === c.value }' @click='onCat(c.value)'>{{ c.label }}</view>
     </scroll-view>
 
+    <view class='fav-bar'>
+      <text class='fav-toggle' :class='{ active: favOnly }' @click='toggleFavOnly'>{{ favOnly ? '★ 仅看收藏' : '☆ 仅看收藏' }}</text>
+    </view>
+
     <view class='card'>
       <button class='btn-add' @click='onAdd'>+ 添加自定义动作</button>
     </view>
@@ -34,6 +38,7 @@
 
     <view v-for='e in exercises' :key='e.id' class='card item' @click='goDetail(e.id)'>
       <view class='item-main'>
+        <text class='fav-star' @click.stop='onToggleFav(e)'>{{ e.isFavorite ? '★' : '☆' }}</text>
         <text class='item-name'>{{ e.name }}</text>
         <text class='tag' :class='e.isSystem ? "tag-sys" : "tag-user"'>{{ e.isSystem ? '系统' : '自定义' }}</text>
       </view>
@@ -61,6 +66,7 @@ const catLabels = EXERCISE_CATEGORIES.map(c => c.label)
 const exercises = ref<ExerciseInfo[]>([])
 const search = ref('')
 const category = ref('')
+const favOnly = ref(false)
 const showForm = ref(false)
 const editing = ref<ExerciseInfo | null>(null)
 const form = reactive({ name: '', muscleGroup: '' })
@@ -73,11 +79,21 @@ async function load() {
     exercises.value = await api.getExercises({
       category: category.value || undefined,
       search: search.value || undefined,
+      favorites: favOnly.value || undefined,
     })
   } catch {}
 }
 
 function onCat(v: string) { category.value = v; load() }
+function toggleFavOnly() { favOnly.value = !favOnly.value; load() }
+async function onToggleFav(e: ExerciseInfo) {
+  try {
+    const r = await api.toggleFavorite(e.id)
+    e.isFavorite = r.isFavorite
+    uni.showToast({ title: r.isFavorite ? '已收藏' : '已取消', icon: 'none' })
+    if (favOnly.value) await load()
+  } catch {}
+}
 function goDetail(id: string) { uni.navigateTo({ url: '/pages/exercise-detail/exercise-detail?id=' + id }) }
 function catLabel(v: string) { return EXERCISE_CATEGORIES.find(c => c.value === v)?.label || v }
 
@@ -157,4 +173,8 @@ async function onDelete(e: ExerciseInfo) {
 .item-actions { display: flex; gap: 12rpx; margin-top: 16rpx; }
 .item-actions button { flex: 1; }
 .btn-warn { background: #ff3b30; color: #fff; }
+.fav-bar { padding: 0 24rpx; margin-bottom: 16rpx; }
+.fav-toggle { font-size: 26rpx; color: #999; padding: 8rpx 20rpx; border: 1rpx solid #ddd; border-radius: 20rpx; }
+.fav-toggle.active { color: #ff9500; border-color: #ff9500; }
+.fav-star { font-size: 36rpx; color: #ccc; margin-right: 12rpx; }
 </style>

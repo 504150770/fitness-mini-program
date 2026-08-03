@@ -13,7 +13,7 @@ export function isValidCategory(c: string): boolean {
 }
 
 export const exerciseService = {
-  async list(userId: string, opts?: { category?: string; search?: string }) {
+  async list(userId: string, opts?: { category?: string; search?: string; favoritesOnly?: boolean }) {
     const where: Prisma.ExerciseWhereInput = {
       OR: [{ isSystem: true }, { creatorId: userId }],
     };
@@ -23,9 +23,13 @@ export const exerciseService = {
     if (opts?.search) {
       where.name = { contains: opts.search };
     }
+    if (opts?.favoritesOnly) {
+      where.favoritedBy = { some: { userId } };
+    }
     return prisma.exercise.findMany({
       where,
       orderBy: [{ isSystem: 'desc' }, { name: 'asc' }],
+      include: { favoritedBy: { where: { userId }, select: { id: true }, take: 1 } },
     });
   },
 
@@ -58,6 +62,19 @@ export const exerciseService = {
       data.muscleGroup = input.muscleGroup ? input.muscleGroup.trim().slice(0, 50) : null;
     }
     return prisma.exercise.update({ where: { id }, data });
+  },
+
+  async toggleFavorite(userId: string, exerciseId: string) {
+    const ex = await prisma.exercise.findUnique({ where: { id: exerciseId } });
+    if (!ex) throw new HttpError(404, '动作不存在');
+    if (!ex.isSystem && ex.creatorId !== userId) throw new HttpError(403, '无权访问');
+    const existing = await prisma.favorite.findUnique({ where: { userId_exerciseId: { userId, exerciseId } } });
+    if (existing) {
+      await prisma.favorite.delete({ where: { id: existing.id } });
+      return { isFavorite: false };
+    }
+    await prisma.favorite.create({ data: { userId, exerciseId } });
+    return { isFavorite: true };
   },
 
   async getDetails(userId: string, id: string) {
