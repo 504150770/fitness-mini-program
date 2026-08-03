@@ -30,3 +30,11 @@ run.err
 Thumbs.db
 .vscode/
 .idea/
+# temp test files
+*.mjs
+peek.cjs
+runtest.cjs
+testresult.txt
+srv.out
+srv.err
+srvpid.txt

@@ -19,5 +19,17 @@
     "navigationBarTitleText": "健身小程序",
     "navigationBarBackgroundColor": "#F8F8F8",
     "backgroundColor": "#F8F8F8"
+  },
+  "tabBar": {
+    "color": "#999999",
+    "selectedColor": "#007aff",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "首页" },
+      { "pagePath": "pages/history/history", "text": "训练" },
+      { "pagePath": "pages/diet/diet", "text": "饮食" },
+      { "pagePath": "pages/profile/profile", "text": "我的" }
+    ]
   }
 }

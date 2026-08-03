@@ -60,15 +60,12 @@
     </view>
 
     <view class='card'>
-      <view class='row'>模块导航</view>
-      <button @click='go(profile)'>用户资料</button>
+      <view class='row'>更多功能</view>
       <button @click='go(body)'>身体数据</button>
       <button @click='go(exercise)'>动作库</button>
       <button @click='go(plan)'>训练计划</button>
-      <button @click='go(history)'>训练历史</button>
       <button @click='go(pr)'>PR记录</button>
       <button @click='go(stats)'>训练统计</button>
-      <button @click='go(diet)'>饮食记录</button>
     </view>
 
     <view class='card'>
@@ -85,13 +82,13 @@ import { ref, computed, onMounted } from 'vue'
 import { api, type HomeData } from '../../api'
 import { getToken, setToken } from '../../api/token'
 import { setPendingExercises } from '../../api/state'
+import { nav } from '../../utils/nav'
 
 const home = ref<HomeData | null>(null)
 const userInfo = ref('')
 const openid = ref('tester001')
 const hasToken = computed(() => !!getToken())
 
-const profile = '/pages/profile/profile'
 const body = '/pages/body/body'
 const exercise = '/pages/exercise/exercise'
 const plan = '/pages/plan/plan'
@@ -126,7 +123,7 @@ function barWidth(pct: number) { return { width: pct + '%' } }
 onMounted(() => { if (hasToken.value) { loadHome(); onMe() } })
 
 async function loadHome() { try { home.value = await api.getHome() } catch {} }
-function go(url: string) { uni.navigateTo({ url }) }
+function go(url: string) { nav(url) }
 
 async function onFreeTrain() {
   if (!hasToken.value) { uni.showToast({ title: '请先登录', icon: 'none' }); return }
