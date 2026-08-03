@@ -24,6 +24,7 @@
 11. 组间休息计时器：记录每组后自动启动，支持 60/90/120/180s 预设、暂停/跳过、振动提醒
 12. 数据导出：训练/饮食/身体数据导出 CSV 至剪贴板
 13. 底部 TabBar 导航：首页/训练/饮食/我的，下拉刷新支持
+14. 微信正式登录：code2Session 换取 openid，AppID 已配置
 
 ## 目录结构
 
@@ -125,14 +126,14 @@
 
 - OneDrive 目录会同步 node_modules，安装被中断可能写坏原生二进制（如 esbuild）。若遇到此问题，删除 node_modules 后用 npmmirror 重新安装。
 - prisma db push / migrate dev 在本机 schema engine CLI 下报空错误，已用 db:diff + db:apply 工作流替代。
-- 微信正式登录（wx-login）当前为占位，缺 AppID/AppSecret 时不阻塞开发。
+- 微信正式登录已实现（code2Session），AppID 已配置，AppSecret 在 .env 中（不提交）。开发环境仍可用 dev-login。
 - 身体照片功能为占位（BodyRecord.photoUrl 字段已预留），图片上传暂未实现。
 - 前端运行时验证通过 vue-tsc 类型检查 + build:mp-weixin 编译；未在微信开发者工具中做真机运行验证（无头环境限制）。
 
 ## 下一版建议
 
 1. 图片上传（身体照片、训练动作图示）
-2. 企业主体切换 + 微信正式登录
+2. 企业主体切换
 3. Web 管理后台
 4. 动作收藏/常用动作快捷入口
 5. 饮食自定义模板（保存常用餐食一键记录）
