@@ -50,7 +50,7 @@ if (config.isDev || process.env.ENABLE_DEV_LOGIN === 'true') {
 }
 
 app.get('/', (_req, res) => {
-  res.json({ code: 0, message: 'Fitness API', data: { status: 'running', health: '/api/v1/health' } });
+  res.type('html').send('<h1>Fitness API</h1><p>Status: running</p><p>Health check: <a href="/api/v1/health">/api/v1/health</a></p>');
 });
 
 app.use(notFound);
