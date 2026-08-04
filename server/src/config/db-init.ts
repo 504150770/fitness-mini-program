@@ -163,16 +163,6 @@ CREATE UNIQUE INDEX IF NOT EXISTS "PersonalRecord_userId_exerciseId_key" ON "Per
 CREATE INDEX IF NOT EXISTS "DietRecord_userId_recordedAt_idx" ON "DietRecord"("userId", "recordedAt");
 CREATE INDEX IF NOT EXISTS "CheckIn_userId_dateKey_idx" ON "CheckIn"("userId", "dateKey");
 CREATE UNIQUE INDEX IF NOT EXISTS "CheckIn_userId_dateKey_key" ON "CheckIn"("userId", "dateKey");
-┌─────────────────────────────────────────────────────────┐
-│  Update available 5.22.0 -> 7.9.1                       │
-│                                                         │
-│  This is a major update - please follow the guide at    │
-│  https://pris.ly/d/major-version-upgrade                │
-│                                                         │
-│  Run the following to update                            │
-│    npm i --save-dev prisma@latest                       │
-│    npm i @prisma/client@latest                          │
-└─────────────────────────────────────────────────────────┘
 `;
 
 const SYSTEM_EXERCISES: { name: string; category: string; muscleGroup: string | null }[] = [
