@@ -17,7 +17,7 @@ import { errorHandler, notFound } from './middlewares/error.middleware';
 const app = express();
 app.use(express.json());
 
-if (config.isDev) {
+if (config.isDev || process.env.ENABLE_DEV_LOGIN === 'true') {
   app.use((_req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -39,7 +39,7 @@ app.use('/api/v1/checkins', checkinRouter);
 app.use('/api/v1/home', homeRouter);
 app.use('/api/v1/stats', statsRouter);
 app.use('/api/v1/export', exportRouter);
-if (config.isDev) {
+if (config.isDev || process.env.ENABLE_DEV_LOGIN === 'true') {
   app.use('/api/v1/auth', devAuthRouter);
 }
 
