@@ -49,6 +49,10 @@ if (config.isDev || process.env.ENABLE_DEV_LOGIN === 'true') {
   app.use('/api/v1/auth', devAuthRouter);
 }
 
+app.get('/', (_req, res) => {
+  res.json({ code: 0, message: 'Fitness API', data: { status: 'running', health: '/api/v1/health' } });
+});
+
 app.use(notFound);
 app.use(errorHandler);
 
