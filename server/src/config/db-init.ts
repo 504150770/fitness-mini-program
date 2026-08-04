@@ -80,16 +80,27 @@ export function ensureDatabase(): Promise<void> {
 async function doInit() {
   try {
     await prisma.$queryRaw`SELECT COUNT(*) as c FROM User`;
+    return;
   } catch {
-    const statements = CREATE_TABLES.split(';').map((s: string) => s.trim()).filter((s: string) => s && !s.startsWith('--'));
-    for (const stmt of statements) {
-      try { await prisma.$executeRawUnsafe(stmt); } catch {}
+    // tables don't exist yet
+  }
+  const statements = CREATE_TABLES.split(';').map((s: string) => s.trim()).filter((s: string) => s && !s.startsWith('--'));
+  for (const stmt of statements) {
+    try {
+      await prisma.$executeRawUnsafe(stmt);
+    } catch (e) {
+      console.error('[db-init] SQL failed:', stmt.slice(0, 60), (e as Error).message);
     }
+  }
+  try {
     const existing = await prisma.exercise.count();
     if (existing === 0) {
       await prisma.exercise.createMany({
         data: SYSTEM_EXERCISES.map(e => ({ ...e, isSystem: true })),
       });
+      console.log('[db-init] Seeded', SYSTEM_EXERCISES.length, 'system exercises');
     }
+  } catch (e) {
+    console.error('[db-init] Seed failed:', (e as Error).message);
   }
 }

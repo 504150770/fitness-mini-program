@@ -1,5 +1,6 @@
 import express from 'express';
 import { config } from './config';
+import { ensureDatabase } from './config/db-init';
 import { healthRouter } from './routes/health.routes';
 import { authRouter, devAuthRouter } from './routes/auth.routes';
 import { userRouter } from './routes/user.routes';
@@ -26,6 +27,11 @@ if (config.isDev || process.env.ENABLE_DEV_LOGIN === 'true') {
   });
   app.options(/.*/, (_req, res) => res.sendStatus(204));
 }
+
+app.use(async (_req, _res, next) => {
+  await ensureDatabase();
+  next();
+});
 
 app.use('/api/v1/health', healthRouter);
 app.use('/api/v1/auth', authRouter);
