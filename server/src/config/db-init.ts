@@ -1,8 +1,34 @@
 import { prisma } from './db';
-import { readFileSync } from 'fs';
-import { join } from 'path';
 
-let initialized = false;
+let initPromise: Promise<void> | null = null;
+
+const CREATE_TABLES = `
+CREATE TABLE IF NOT EXISTS "User" ("id" TEXT NOT NULL PRIMARY KEY, "openid" TEXT NOT NULL, "unionid" TEXT, "nickname" TEXT, "avatarUrl" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL);
+CREATE UNIQUE INDEX IF NOT EXISTS "User_openid_key" ON "User"("openid");
+CREATE TABLE IF NOT EXISTS "UserProfile" ("userId" TEXT NOT NULL PRIMARY KEY, "gender" TEXT, "birthDate" DATETIME, "heightCm" REAL, "goal" TEXT, "dailyCalorieGoal" INTEGER, "dailyProteinGoal" REAL, "weeklyTrainGoal" INTEGER, "targetWeightKg" REAL, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL);
+CREATE TABLE IF NOT EXISTS "BodyRecord" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "recordedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "weightKg" REAL NOT NULL, "bodyFatPct" REAL, "photoUrl" TEXT, "note" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "BodyRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "BodyRecord_userId_idx" ON "BodyRecord"("userId");
+CREATE TABLE IF NOT EXISTS "Exercise" ("id" TEXT NOT NULL PRIMARY KEY, "name" TEXT NOT NULL, "category" TEXT NOT NULL, "muscleGroup" TEXT, "isSystem" BOOLEAN NOT NULL DEFAULT false, "creatorId" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "Exercise_creatorId_fkey" FOREIGN KEY ("creatorId") REFERENCES "User" ("id") ON DELETE SET NULL ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "Exercise_category_idx" ON "Exercise"("category");
+CREATE INDEX IF NOT EXISTS "Exercise_creatorId_idx" ON "Exercise"("creatorId");
+CREATE TABLE IF NOT EXISTS "WorkoutPlan" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "name" TEXT NOT NULL, "note" TEXT, "sortOrder" INTEGER NOT NULL DEFAULT 0, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "WorkoutPlan_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "WorkoutPlan_userId_idx" ON "WorkoutPlan"("userId");
+CREATE TABLE IF NOT EXISTS "WorkoutPlanExercise" ("id" TEXT NOT NULL PRIMARY KEY, "planId" TEXT NOT NULL, "exerciseId" TEXT NOT NULL, "sets" INTEGER NOT NULL DEFAULT 3, "reps" TEXT NOT NULL DEFAULT '8-12', "weightKg" REAL, "sortOrder" INTEGER NOT NULL DEFAULT 0, "note" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "WorkoutPlanExercise_planId_fkey" FOREIGN KEY ("planId") REFERENCES "WorkoutPlan" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "WorkoutPlanExercise_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise" ("id") ON DELETE RESTRICT ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "WorkoutPlanExercise_planId_idx" ON "WorkoutPlanExercise"("planId");
+CREATE TABLE IF NOT EXISTS "WorkoutSession" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "planId" TEXT, "planName" TEXT, "name" TEXT NOT NULL, "startedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "endedAt" DATETIME, "status" TEXT NOT NULL DEFAULT 'ACTIVE', "totalVolumeKg" REAL NOT NULL DEFAULT 0, "note" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "WorkoutSession_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "WorkoutSession_userId_idx" ON "WorkoutSession"("userId");
+CREATE TABLE IF NOT EXISTS "WorkoutLog" ("id" TEXT NOT NULL PRIMARY KEY, "sessionId" TEXT NOT NULL, "exerciseId" TEXT NOT NULL, "exerciseName" TEXT NOT NULL, "setOrder" INTEGER NOT NULL DEFAULT 1, "weightKg" REAL NOT NULL, "reps" INTEGER NOT NULL, "volumeKg" REAL NOT NULL, "isPR" BOOLEAN NOT NULL DEFAULT false, "note" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "WorkoutLog_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "WorkoutSession" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "WorkoutLog_sessionId_idx" ON "WorkoutLog"("sessionId");
+CREATE TABLE IF NOT EXISTS "PersonalRecord" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "exerciseId" TEXT NOT NULL, "maxWeightKg" REAL NOT NULL, "maxWeightReps" INTEGER NOT NULL, "achievedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "PersonalRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "PersonalRecord_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE UNIQUE INDEX IF NOT EXISTS "PersonalRecord_userId_exerciseId_key" ON "PersonalRecord"("userId", "exerciseId");
+CREATE TABLE IF NOT EXISTS "DietRecord" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "mealType" TEXT NOT NULL, "foodName" TEXT NOT NULL, "caloriesKcal" INTEGER NOT NULL, "proteinG" REAL, "carbsG" REAL, "fatG" REAL, "recordedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "note" TEXT, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "DietRecord_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE INDEX IF NOT EXISTS "DietRecord_userId_idx" ON "DietRecord"("userId");
+CREATE TABLE IF NOT EXISTS "CheckIn" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "date" TEXT NOT NULL, "hasTraining" BOOLEAN NOT NULL DEFAULT false, "hasDiet" BOOLEAN NOT NULL DEFAULT false, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, "updatedAt" DATETIME NOT NULL, CONSTRAINT "CheckIn_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE UNIQUE INDEX IF NOT EXISTS "CheckIn_userId_date_key" ON "CheckIn"("userId", "date");
+CREATE TABLE IF NOT EXISTS "Favorite" ("id" TEXT NOT NULL PRIMARY KEY, "userId" TEXT NOT NULL, "exerciseId" TEXT NOT NULL, "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, CONSTRAINT "Favorite_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User" ("id") ON DELETE CASCADE ON UPDATE CASCADE, CONSTRAINT "Favorite_exerciseId_fkey" FOREIGN KEY ("exerciseId") REFERENCES "Exercise" ("id") ON DELETE CASCADE ON UPDATE CASCADE);
+CREATE UNIQUE INDEX IF NOT EXISTS "Favorite_userId_exerciseId_key" ON "Favorite"("userId", "exerciseId");
+CREATE INDEX IF NOT EXISTS "Favorite_userId_idx" ON "Favorite"("userId");
+`;
 
 const SYSTEM_EXERCISES: { name: string; category: string; muscleGroup: string | null }[] = [
   { name: '杠铃卧推', category: 'CHEST', muscleGroup: '胸大肌' },
@@ -44,15 +70,18 @@ const SYSTEM_EXERCISES: { name: string; category: string; muscleGroup: string | 
   { name: '仰卧举腿', category: 'CORE', muscleGroup: '腹直肌' },
 ];
 
-export async function ensureDatabase() {
-  if (initialized) return;
+export function ensureDatabase(): Promise<void> {
+  if (!initPromise) {
+    initPromise = doInit();
+  }
+  return initPromise;
+}
+
+async function doInit() {
   try {
     await prisma.$queryRaw`SELECT COUNT(*) as c FROM User`;
-    initialized = true;
   } catch {
-    const schemaPath = join(process.cwd(), 'prisma', 'schema.sql');
-    const schema = readFileSync(schemaPath, 'utf-8');
-    const statements = schema.split(';').map((s: string) => s.trim()).filter((s: string) => s && !s.startsWith('--'));
+    const statements = CREATE_TABLES.split(';').map((s: string) => s.trim()).filter((s: string) => s && !s.startsWith('--'));
     for (const stmt of statements) {
       try { await prisma.$executeRawUnsafe(stmt); } catch {}
     }
@@ -62,6 +91,5 @@ export async function ensureDatabase() {
         data: SYSTEM_EXERCISES.map(e => ({ ...e, isSystem: true })),
       });
     }
-    initialized = true;
   }
 }
