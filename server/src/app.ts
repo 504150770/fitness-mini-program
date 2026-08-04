@@ -46,8 +46,10 @@ if (config.isDev) {
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(config.port, () => {
-  console.log(`[server] http://localhost:${config.port} (${config.nodeEnv})`);
-});
+if (!process.env.VERCEL) {
+  app.listen(config.port, () => {
+    console.log(`[server] http://localhost:${config.port} (${config.nodeEnv})`);
+  });
+}
 
 export default app;
